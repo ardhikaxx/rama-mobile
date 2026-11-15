@@ -154,7 +154,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     final expandedText = SentenceExpander.expandActivities(_activitiesController.text);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -298,7 +298,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     final expandedText = SentenceExpander.expandLearnings(_learningsController.text);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -409,7 +409,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     final expandedText = SentenceExpander.expandObstacles(_obstaclesController.text);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -575,7 +575,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
           );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

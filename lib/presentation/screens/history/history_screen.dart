@@ -199,7 +199,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
             itemCount: records.length,
             itemBuilder: (ctx, index) {
               final record = records[index];
@@ -235,7 +235,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
             itemCount: entries.length,
             itemBuilder: (ctx, index) {
               final entry = entries[index];
@@ -287,7 +287,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           }
 
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
             itemCount: activities.length,
             itemBuilder: (ctx, index) {
               final act = activities[index];

@@ -115,7 +115,7 @@ class DashboardScreen extends ConsumerWidget {
                     onLogbookTap: () => onNavigateTab(2),
                     onHistoryTap: () => onNavigateTab(3),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 95),
                 ],
               );
             },
