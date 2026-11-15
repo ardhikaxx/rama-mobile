@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../providers/attendance_provider.dart';
 import '../../../../providers/dashboard_provider.dart';
 import '../../../../providers/logbook_provider.dart';
-import '../../../../providers/settings_provider.dart';
 import '../attendance/widgets/attendance_dialog.dart';
 import '../settings/reminder_settings_screen.dart';
 import 'widgets/daily_progress_card.dart';
@@ -24,8 +23,6 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final dashboardAsync = ref.watch(dashboardDataProvider);
-    final settingsAsync = ref.watch(settingsProvider);
-    final userName = settingsAsync.valueOrNull?.userName;
 
     return Scaffold(
       body: SafeArea(
@@ -59,13 +56,11 @@ class DashboardScreen extends ConsumerWidget {
               return ListView(
                 padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 children: [
-                  // Greeting & Header
+                  // App Bar Header
                   GreetingHeader(
-                    greeting: data.greeting,
-                    userName: userName,
                     currentDate: data.currentDate,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   // Today's Status Card
                   MainStatusCard(
