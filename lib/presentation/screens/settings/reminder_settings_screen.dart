@@ -166,15 +166,17 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Interval Pengingat Susulan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                            Text('Ulangi jika belum melakukan aktivitas', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
-                          ],
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Interval Pengingat Susulan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                              Text('Ulangi jika belum melakukan aktivitas', style: TextStyle(fontSize: 12, color: AppColors.textSecondary)),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 12),
                         DropdownButton<int>(
                           value: settings?.snoozeIntervalMinutes ?? 15,
                           underline: const SizedBox.shrink(),
@@ -301,39 +303,43 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Icon(icon, color: color, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        schedule.typeDisplayName,
-                        style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                      ),
-                      Text(
-                        schedule.message,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11.5,
-                          color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
               ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      schedule.typeDisplayName,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      schedule.message,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                        height: 1.25,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 8),
               Switch(
                 value: schedule.isEnabled,
                 onChanged: onToggle,
@@ -392,36 +398,39 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
           const Text('Hari Aktif:', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: List.generate(7, (i) {
               final dayIndex = i + 1; // 1 = Monday .. 7 = Sunday
               final isDayActive = schedule.activeDays.contains(dayIndex);
               final dayLabel = AppConstants.shortDayNames[dayIndex] ?? '';
 
-              return InkWell(
-                onTap: schedule.isEnabled ? () => onToggleDay(dayIndex) : null,
-                borderRadius: BorderRadius.circular(8),
-                child: Container(
-                  width: 38,
-                  height: 38,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: isDayActive
-                        ? (schedule.isEnabled ? AppColors.primary : AppColors.textSecondary)
-                        : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
+              return Expanded(
+                child: Padding(
+                  padding: EdgeInsets.only(right: i < 6 ? 6.0 : 0),
+                  child: InkWell(
+                    onTap: schedule.isEnabled ? () => onToggleDay(dayIndex) : null,
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isDayActive ? Colors.transparent : (isDark ? AppColors.darkBorder : AppColors.border),
-                    ),
-                  ),
-                  child: Text(
-                    dayLabel,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isDayActive
-                          ? Colors.white
-                          : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                    child: Container(
+                      height: 38,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: isDayActive
+                            ? (schedule.isEnabled ? AppColors.primary : AppColors.textSecondary)
+                            : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9)),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isDayActive ? Colors.transparent : (isDark ? AppColors.darkBorder : AppColors.border),
+                        ),
+                      ),
+                      child: Text(
+                        dayLabel,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isDayActive
+                              ? Colors.white
+                              : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                        ),
+                      ),
                     ),
                   ),
                 ),

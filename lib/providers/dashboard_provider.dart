@@ -154,10 +154,10 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
     uniqueRecordedDates.add(l.date);
   }
 
-  // Pending tasks this week
-  // Calculate how many active workdays have passed this week up to today
+  // Pending activities this week
+  // Calculate how many active workdays have passed this week BEFORE today (past days only)
   int pendingWeekTasks = 0;
-  for (int d = 1; d <= weekday; d++) {
+  for (int d = 1; d < weekday; d++) {
     if (settings.activeDays.contains(d)) {
       final targetDate = monday.add(Duration(days: d - 1));
       final dateKey = DateFormatter.toDateKey(targetDate);

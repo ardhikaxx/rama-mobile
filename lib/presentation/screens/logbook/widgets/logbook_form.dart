@@ -163,7 +163,7 @@ class _LogbookFormState extends State<LogbookForm> {
               TextButton.icon(
                 onPressed: () {
                   _obstaclesController.text =
-                      'Tidak ada kendala berarti selama kegiatan magang berlangsung, seluruh tugas dapat diselesaikan dengan baik.';
+                      'Tidak ada kendala berarti selama kegiatan magang berlangsung, seluruh aktivitas dapat diselesaikan dengan baik.';
                 },
                 icon: const Icon(LucideIcons.sparkles, size: 14),
                 label: const Text('Tidak Ada Kendala', style: TextStyle(fontSize: 12)),

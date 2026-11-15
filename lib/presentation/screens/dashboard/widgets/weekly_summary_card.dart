@@ -61,8 +61,8 @@ class WeeklySummaryCard extends StatelessWidget {
             Expanded(
               child: _buildMetricTile(
                 context,
-                title: 'Belum Selesai',
-                value: '$pendingTasks Tugas',
+                title: 'Aktivitas Terlewat',
+                value: '$pendingTasks Aktivitas',
                 icon: LucideIcons.clock,
                 color: AppColors.warning,
                 bgColor: AppColors.warningLight,

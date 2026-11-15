@@ -28,10 +28,10 @@ class DailyProgressCard extends StatelessWidget {
     } else if (completedTasks >= totalTasks && totalTasks > 0) {
       subtitleText = 'Luar biasa! Seluruh target aktivitas magang hari ini selesai.';
     } else if (completedTasks == 0) {
-      subtitleText = 'Kamu memiliki $totalTasks kewajiban magang yang perlu diselesaikan.';
+      subtitleText = 'Belum ada aktivitas magang yang dicatat hari ini.';
     } else {
       final remaining = totalTasks - completedTasks;
-      subtitleText = '$completedTasks dari $totalTasks tugas selesai. Tinggal $remaining lagi!';
+      subtitleText = '$completedTasks dari $totalTasks aktivitas selesai. Tinggal $remaining lagi!';
     }
 
     return AppCard(
