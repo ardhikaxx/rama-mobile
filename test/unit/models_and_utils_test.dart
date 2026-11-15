@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rama_app/core/utils/date_formatter.dart';
+import 'package:rama_app/core/utils/sentence_expander.dart';
 import 'package:rama_app/data/models/app_settings.dart';
 import 'package:rama_app/data/models/attendance_record.dart';
 import 'package:rama_app/data/models/logbook_entry.dart';
@@ -118,6 +119,30 @@ void main() {
       expect(defaults[0].type, equals('check_in'));
       expect(defaults[1].type, equals('check_out'));
       expect(defaults[2].type, equals('logbook'));
+    });
+  });
+
+  group('SentenceExpander Tests', () {
+    test('expands short activity keywords into formal sentences', () {
+      final expanded = SentenceExpander.expandActivities('desain UI dashboard');
+      expect(expanded, contains('antarmuka'));
+      expect(expanded, contains('desain UI dashboard'));
+      expect(expanded, endsWith('.'));
+    });
+
+    test('expands short learning keyword into formal sentence', () {
+      final expanded = SentenceExpander.expandLearnings('riverpod');
+      expect(expanded, contains('pemahaman'));
+      expect(expanded, contains('riverpod'));
+    });
+
+    test('expands obstacles and handles quick empty/tidak ada case', () {
+      final emptyExpanded = SentenceExpander.expandObstacles('tidak ada');
+      expect(emptyExpanded, contains('Tidak ada kendala berarti'));
+
+      final bugExpanded = SentenceExpander.expandObstacles('error build gradle');
+      expect(bugExpanded, contains('error build gradle'));
+      expect(bugExpanded, contains('mentor'));
     });
   });
 }

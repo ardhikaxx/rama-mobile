@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_formatter.dart';
+import '../../core/utils/sentence_expander.dart';
 import '../data/models/logbook_entry.dart';
 import 'app_providers.dart';
 
@@ -119,14 +120,31 @@ class LogbookNotifier extends StateNotifier<LogbookState> {
     );
   }
 
-  String buildReport() {
+  String buildReport({
+    String? activities,
+    String? learnings,
+    String? obstacles,
+  }) {
+    final rawAct = activities ?? state.activities;
+    final rawLearn = learnings ?? state.learnings;
+    final rawObs = obstacles ?? state.obstacles;
+
+    final finalActivities = SentenceExpander.expandActivities(rawAct);
+    final finalLearnings = SentenceExpander.expandLearnings(rawLearn);
+    final finalObstacles = SentenceExpander.expandObstacles(rawObs);
+
     final report = LogbookEntry.generateTemplateText(
       date: state.selectedDate,
-      activities: state.activities,
-      learnings: state.learnings,
-      obstacles: state.obstacles,
+      activities: finalActivities,
+      learnings: finalLearnings,
+      obstacles: finalObstacles,
     );
-    state = state.copyWith(generatedPreview: report);
+    state = state.copyWith(
+      activities: finalActivities,
+      learnings: finalLearnings,
+      obstacles: finalObstacles,
+      generatedPreview: report,
+    );
     return report;
   }
 
