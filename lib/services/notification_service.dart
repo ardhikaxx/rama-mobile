@@ -173,48 +173,110 @@ class NotificationService {
     final baseId = _getBaseIdForType(schedule.type);
     final payload = _getPayloadForType(schedule.type);
 
+    final totalMinutes = schedule.hour * 60 + schedule.minute;
+    // 4 Tahap Pengingat (Dimulai 1 jam sebelum pulang s/d jam pulang):
+    // 0: 1 jam sebelum pulang (-60m)
+    // 1: Pengingat ke-2 (-40m)
+    // 2: Pengingat ke-3 (-20m)
+    // 3: Tepat saat jam pulang (0m)
+    final intervalOffsets = [-60, -40, -20, 0];
+
     for (final day in schedule.activeDays) {
-      final notificationId = baseId + day;
-      final scheduledDate = _nextInstanceOfDayAndTime(day, schedule.hour, schedule.minute);
+      for (int step = 0; step < intervalOffsets.length; step++) {
+        var stepMin = totalMinutes + intervalOffsets[step];
+        if (stepMin < 0) stepMin += 24 * 60;
+        final targetHour = (stepMin ~/ 60) % 24;
+        final targetMinute = stepMin % 60;
 
-      final androidDetails = _buildAndroidDetails(sound: sound, vibration: vibration);
+        final notificationId = baseId + (day * 10) + step;
+        final scheduledDate = _nextInstanceOfDayAndTime(day, targetHour, targetMinute);
 
-      final details = NotificationDetails(
-        android: androidDetails,
-        iOS: DarwinNotificationDetails(
-          presentSound: sound,
-          presentAlert: true,
-          presentBadge: true,
-        ),
-      );
+        String stepTitle;
+        String stepBody;
 
-      try {
-        await _notificationsPlugin.zonedSchedule(
-          id: notificationId,
-          title: schedule.title,
-          body: schedule.message,
-          scheduledDate: scheduledDate,
-          notificationDetails: details,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
-          payload: payload,
+        if (schedule.type == AppConstants.reminderAttendance ||
+            schedule.type == AppConstants.reminderCheckOut) {
+          switch (step) {
+            case 0:
+              stepTitle = '⏰ 1 Jam Menuju Jam Pulang (${schedule.time})';
+              stepBody = 'Waktunya persiapan absensi magang sebelum pulang hari ini.';
+              break;
+            case 1:
+              stepTitle = '⏰ Pengingat ke-2: Absensi Magang';
+              stepBody =
+                  'Masih ada 40 menit sebelum pulang. Jangan lupa konfirmasi presensi kehadiran magang.';
+              break;
+            case 2:
+              stepTitle = '⏰ Pengingat ke-3: Absensi Magang';
+              stepBody =
+                  '20 menit lagi menuju jam pulang! Pastikan presensi kehadiran magang Anda sudah tercatat.';
+              break;
+            default:
+              stepTitle = '⏰ Waktunya Jam Pulang Magang (${schedule.time})!';
+              stepBody =
+                  'Jam kerja telah usai! Konfirmasi absensi sebelum meninggalkan lokasi magang.';
+          }
+        } else {
+          switch (step) {
+            case 0:
+              stepTitle = '📝 1 Jam Menuju Jam Pulang (${schedule.time})';
+              stepBody =
+                  'Yuk mulai rangkum dan dokumentasikan aktivitas logbook magang Anda hari ini.';
+              break;
+            case 1:
+              stepTitle = '📝 Pengingat ke-2: Pengisian Logbook';
+              stepBody =
+                  'Masih ada 40 menit sebelum pulang. Cicil penulisan pembelajaran dan aktivitas di logbook.';
+              break;
+            case 2:
+              stepTitle = '📝 Pengingat ke-3: Siapkan Logbook Magang';
+              stepBody =
+                  '20 menit lagi menuju jam pulang. Pastikan uraian logbook sudah siap disalin/dikirim.';
+              break;
+            default:
+              stepTitle = '📝 Jam Pulang Magang (${schedule.time})!';
+              stepBody =
+                  'Waktunya pulang! Jangan lupa simpan atau kirimkan laporan logbook harian Anda.';
+          }
+        }
+
+        final androidDetails = _buildAndroidDetails(sound: sound, vibration: vibration);
+        final details = NotificationDetails(
+          android: androidDetails,
+          iOS: DarwinNotificationDetails(
+            presentSound: sound,
+            presentAlert: true,
+            presentBadge: true,
+          ),
         );
-      } catch (e) {
-        // Fallback to inexact if exact alarm permission is missing on Android 12+
-        debugPrint('Exact alarm failed, falling back to inexact: $e');
+
         try {
           await _notificationsPlugin.zonedSchedule(
             id: notificationId,
-            title: schedule.title,
-            body: schedule.message,
+            title: stepTitle,
+            body: stepBody,
             scheduledDate: scheduledDate,
             notificationDetails: details,
-            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
             matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
             payload: payload,
           );
-        } catch (err) {
-          debugPrint('Failed to schedule notification: $err');
+        } catch (e) {
+          debugPrint('Exact alarm failed, falling back to inexact: $e');
+          try {
+            await _notificationsPlugin.zonedSchedule(
+              id: notificationId,
+              title: stepTitle,
+              body: stepBody,
+              scheduledDate: scheduledDate,
+              notificationDetails: details,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+              matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
+              payload: payload,
+            );
+          } catch (err) {
+            debugPrint('Failed to schedule notification: $err');
+          }
         }
       }
     }
@@ -269,6 +331,9 @@ class NotificationService {
   Future<void> cancelRemindersForType(String type) async {
     final baseId = _getBaseIdForType(type);
     for (int day = 1; day <= 7; day++) {
+      for (int step = 0; step < 4; step++) {
+        await _notificationsPlugin.cancel(id: baseId + (day * 10) + step);
+      }
       await _notificationsPlugin.cancel(id: baseId + day);
     }
     await cancelSnoozeForType(type);

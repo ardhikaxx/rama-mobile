@@ -98,6 +98,11 @@ class DashboardScreen extends ConsumerWidget {
                   NextReminderCard(
                     schedule: data.nextReminder,
                     countdown: data.nextReminderCountdown,
+                    isPastDeparture: data.isPastDepartureTime,
+                    reminderTitle: data.reminderTitle,
+                    reminderBadge: data.reminderBadge,
+                    reminderMessage: data.reminderMessage,
+                    statusType: data.reminderStatusType,
                     onSettingsTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(

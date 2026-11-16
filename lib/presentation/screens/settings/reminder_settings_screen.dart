@@ -79,7 +79,7 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
             ),
             const SizedBox(height: 4),
             const Text(
-              'Atur waktu pengingat harian agar Anda selalu disiplin melakukan absensi dan menulis logbook tepat waktu.',
+              'Pengingat kepulangan otomatis dimulai dari 1 jam sebelum jam pulang (15.30), lalu diingatkan lagi berulang 3 kali (15.50, 16.10, dan 16.30 saat jam pulang) agar absensi dan logbook selalu terisi tepat waktu.',
               style: TextStyle(
                 fontSize: 12.5,
                 color: AppColors.textSecondary,

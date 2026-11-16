@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_formatter.dart';
@@ -27,6 +28,11 @@ class DashboardData {
   final int totalWorkdaysRecorded;
   final ReminderSchedule? nextReminder;
   final String? nextReminderCountdown;
+  final bool isPastDepartureTime;
+  final String reminderTitle;
+  final String reminderBadge;
+  final String reminderMessage;
+  final String reminderStatusType; // 'past_pending', 'all_completed', 'active_countdown', 'upcoming', 'holiday', 'normal'
 
   const DashboardData({
     required this.greeting,
@@ -45,6 +51,11 @@ class DashboardData {
     required this.totalWorkdaysRecorded,
     this.nextReminder,
     this.nextReminderCountdown,
+    this.isPastDepartureTime = false,
+    this.reminderTitle = 'Pengingat Berikutnya',
+    this.reminderBadge = '',
+    this.reminderMessage = '',
+    this.reminderStatusType = 'normal',
   });
 
   // Backward-compatibility getters
@@ -160,40 +171,124 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
     }
   }
 
-  // Next upcoming reminder calculation
+  // Next upcoming reminder calculation & pre-departure reminder series
   ReminderSchedule? nextReminder;
   String? nextReminderCountdown;
+  bool isPastDepartureTime = false;
+  String reminderTitle = 'Pengingat Berikutnya';
+  String reminderBadge = '';
+  String reminderMessage = '';
+  String reminderStatusType = 'normal';
 
-  if (isTodayWorkday) {
-    final candidateSchedules = <ReminderSchedule>[];
+  // Parse working end time (jam pulang kerja magang, default 16:30)
+  final endParts = settings.workingEndTime.split(':');
+  final departureHour = int.tryParse(endParts[0]) ?? 16;
+  final departureMinute = int.tryParse(endParts[1]) ?? 30;
+  final departureMinutes = departureHour * 60 + departureMinute;
+  final nowMinutes = now.hour * 60 + now.minute;
 
-    if (attendanceActive && attendanceRecord == null && attendanceSchedule != null) {
-      candidateSchedules.add(attendanceSchedule);
+  isPastDepartureTime = nowMinutes > departureMinutes;
+
+  // 4 Tahap Pengingat (1 jam sebelum pulang s/d jam pulang):
+  // Step 0: 60m sebelum pulang (15.30)
+  // Step 1: 40m sebelum pulang (15.50)
+  // Step 2: 20m sebelum pulang (16.10)
+  // Step 3: Tepat jam pulang (16.30)
+  final step0Minutes = departureMinutes - 60;
+  final step1Minutes = departureMinutes - 40;
+  final step2Minutes = departureMinutes - 20;
+  final step3Minutes = departureMinutes;
+
+  String formatMinToHHmm(int totalMin) {
+    var min = totalMin;
+    if (min < 0) min += 24 * 60;
+    final h = (min ~/ 60) % 24;
+    final m = min % 60;
+    return '${h.toString().padLeft(2, '0')}.${m.toString().padLeft(2, '0')}';
+  }
+
+  final step0Str = formatMinToHHmm(step0Minutes);
+  final step1Str = formatMinToHHmm(step1Minutes);
+  final step2Str = formatMinToHHmm(step2Minutes);
+  final step3Str = formatMinToHHmm(step3Minutes);
+
+  final isAttendanceDone = !attendanceActive || attendanceRecord != null;
+  final isLogbookDone = !logbookActive || todayLogbook != null;
+  final isAllDone = isAttendanceDone && isLogbookDone;
+
+  if (!isTodayWorkday) {
+    reminderStatusType = 'holiday';
+    reminderTitle = 'Jadwal Magang';
+    reminderBadge = 'Libur';
+    reminderMessage = 'Hari ini tidak ada jadwal presensi magang dan pengisian logbook.';
+  } else if (isAllDone) {
+    reminderStatusType = 'all_completed';
+    if (isPastDepartureTime) {
+      reminderTitle = 'Aktivitas Hari Ini Tuntas';
+      reminderBadge = 'Selesai ($step3Str)';
+      reminderMessage =
+          'Jam kerja magang telah usai. Semua absensi & logbook hari ini telah tuntas! Selamat beristirahat.';
+    } else {
+      reminderTitle = 'Tugas Selesai Lebih Awal';
+      reminderBadge = 'Siap Pulang';
+      reminderMessage =
+          'Absensi dan logbook hari ini sudah tuntas sebelum jam pulang ($step3Str). Tetap semangat!';
     }
-    if (logbookActive && todayLogbook == null && logbookSchedule != null) {
-      candidateSchedules.add(logbookSchedule);
+  } else if (isPastDepartureTime) {
+    // Sudah melewati jam pulang kerja dan ada tugas yang belum selesai
+    reminderStatusType = 'past_pending';
+    reminderTitle = 'Perhatian Jam Pulang';
+    reminderBadge = 'Lewat ($step3Str)';
+
+    if (!isAttendanceDone && !isLogbookDone) {
+      reminderMessage =
+          'Sudah melewati jam pulang ($step3Str). Segera selesaikan absensi dan pengisian logbook hari ini!';
+    } else if (!isAttendanceDone) {
+      reminderMessage =
+          'Sudah melewati jam pulang ($step3Str). Jangan lupa konfirmasi presensi kehadiran magang Anda!';
+    } else {
+      reminderMessage =
+          'Sudah melewati jam pulang ($step3Str). Jangan lupa lengkapi dan simpan laporan logbook Anda!';
     }
 
-    final nowMinutes = now.hour * 60 + now.minute;
-    candidateSchedules.sort((a, b) {
-      final aMin = a.hour * 60 + a.minute;
-      final bMin = b.hour * 60 + b.minute;
-      return aMin.compareTo(bMin);
-    });
+    nextReminder = !isAttendanceDone ? attendanceSchedule : logbookSchedule;
+    nextReminderCountdown = 'Lewat jadwal ($step3Str)';
+  } else if (nowMinutes >= step0Minutes && nowMinutes <= departureMinutes) {
+    // Fase 1 jam sebelum pulang s/d jam pulang (15.30 - 16.30)
+    reminderStatusType = 'active_countdown';
+    reminderTitle = 'Pengingat Kepulangan';
+    nextReminder = !isAttendanceDone ? attendanceSchedule : logbookSchedule;
 
-    for (final s in candidateSchedules) {
-      final sMin = s.hour * 60 + s.minute;
-      if (sMin >= nowMinutes) {
-        nextReminder = s;
-        nextReminderCountdown = DateFormatter.getCountdownText(s.timeOfDay);
-        break;
-      }
+    if (nowMinutes < step1Minutes) {
+      final cd = DateFormatter.getCountdownText(
+          TimeOfDay(hour: (step1Minutes ~/ 60) % 24, minute: step1Minutes % 60));
+      reminderBadge = step1Str;
+      reminderMessage = 'Pengingat ke-2 ($step1Str) • $cd';
+      nextReminderCountdown = cd;
+    } else if (nowMinutes < step2Minutes) {
+      final cd = DateFormatter.getCountdownText(
+          TimeOfDay(hour: (step2Minutes ~/ 60) % 24, minute: step2Minutes % 60));
+      reminderBadge = step2Str;
+      reminderMessage = 'Pengingat ke-3 ($step2Str) • $cd';
+      nextReminderCountdown = cd;
+    } else {
+      final cd = DateFormatter.getCountdownText(
+          TimeOfDay(hour: (step3Minutes ~/ 60) % 24, minute: step3Minutes % 60));
+      reminderBadge = step3Str;
+      reminderMessage = 'Pengingat jam pulang ($step3Str) • $cd';
+      nextReminderCountdown = cd;
     }
-
-    if (nextReminder == null && candidateSchedules.isNotEmpty) {
-      nextReminder = candidateSchedules.first;
-      nextReminderCountdown = 'Lewat jadwal (${nextReminder.time})';
-    }
+  } else {
+    // Pagi atau siang hari sebelum jam 15.30
+    reminderStatusType = 'upcoming';
+    reminderTitle = 'Pengingat Berikutnya';
+    reminderBadge = step0Str;
+    final cd = DateFormatter.getCountdownText(
+        TimeOfDay(hour: (step0Minutes ~/ 60) % 24, minute: step0Minutes % 60));
+    reminderMessage =
+        'Pengingat dimulai 1 jam sebelum jam pulang ($step0Str) • $cd';
+    nextReminder = !isAttendanceDone ? attendanceSchedule : logbookSchedule;
+    nextReminderCountdown = cd;
   }
 
   return DashboardData(
@@ -213,5 +308,10 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
     totalWorkdaysRecorded: uniqueRecordedDates.length,
     nextReminder: nextReminder,
     nextReminderCountdown: nextReminderCountdown,
+    isPastDepartureTime: isPastDepartureTime,
+    reminderTitle: reminderTitle,
+    reminderBadge: reminderBadge,
+    reminderMessage: reminderMessage,
+    reminderStatusType: reminderStatusType,
   );
 });
