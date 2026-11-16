@@ -72,7 +72,7 @@ class GreetingHeader extends StatelessWidget {
                           child: Text(
                             'Rekap Aktivitas Magang & Absensi',
                             style: TextStyle(
-                              fontSize: 9.5,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.w600,
                               letterSpacing: -0.1,
                               color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,

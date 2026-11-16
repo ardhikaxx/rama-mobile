@@ -28,5 +28,13 @@ void main() {
     expect(find.text('Buat & Lihat Hasil Laporan'), findsOneWidget);
     expect(find.textContaining('Uraian Aktivitas'), findsWidgets);
     expect(find.textContaining('Pembelajaran'), findsWidgets);
+    expect(find.textContaining('Kendala'), findsWidgets);
+    expect(find.text('Tidak Ada Kendala'), findsOneWidget);
+
+    // Tap "Tidak Ada Kendala" to verify explicit user action fills the field
+    await tester.tap(find.text('Tidak Ada Kendala'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Tidak ada kendala dalam pelaksanaan kegiatan hari ini'), findsOneWidget);
   });
 }

@@ -132,7 +132,7 @@ class SentenceExpander {
   static String expandObstacles(String rawInput) {
     final trimmed = rawInput.trim();
     if (trimmed.isEmpty) {
-      return defaultNoObstacle;
+      return '';
     }
 
     final lower = trimmed.toLowerCase();
