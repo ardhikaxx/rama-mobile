@@ -47,10 +47,10 @@ class _AboutScreenState extends State<AboutScreen> {
               child: Column(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(18),
+                    width: 80,
+                    height: 80,
                     decoration: BoxDecoration(
-                      gradient: AppColors.primaryGradient,
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(22),
                       boxShadow: [
                         BoxShadow(
                           color: AppColors.primary.withValues(alpha: 0.35),
@@ -59,10 +59,12 @@ class _AboutScreenState extends State<AboutScreen> {
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      LucideIcons.checkCheck,
-                      color: Colors.white,
-                      size: 44,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(22),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
