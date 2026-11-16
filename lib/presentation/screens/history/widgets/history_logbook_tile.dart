@@ -294,6 +294,8 @@ class HistoryLogbookTile extends StatelessWidget {
                       icon: const Icon(LucideIcons.copy, size: 15),
                       label: const Text('Salin Laporan', style: TextStyle(fontSize: 13)),
                       style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.onPrimary,
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
                     ),
