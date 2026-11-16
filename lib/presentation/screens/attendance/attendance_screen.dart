@@ -73,18 +73,18 @@ class AttendanceScreen extends ConsumerWidget {
                         color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Icon(LucideIcons.calendarDays, color: AppColors.primary, size: 20),
+                      child: const Icon(LucideIcons.calendarDays, color: AppColors.accentAmber, size: 20),
                     ),
                     const SizedBox(width: 12),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           'Tanggal Hari Ini',
                           style: TextStyle(
                             fontSize: 11.5,
                             fontWeight: FontWeight.w500,
-                            color: AppColors.textSecondary,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
                           ),
                         ),
                         Text(
@@ -117,16 +117,16 @@ class AttendanceScreen extends ConsumerWidget {
               // Policy Info Banner
               AppCard(
                 padding: const EdgeInsets.all(14),
-                color: isDark ? AppColors.darkSurface : const Color(0xFFF8FAFC),
+                color: isDark ? AppColors.darkSurface : AppColors.background,
                 border: BorderSide(
-                  color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+                  color: isDark ? AppColors.darkBorder : AppColors.border,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(
                       LucideIcons.clock,
-                      color: AppColors.primary,
+                      color: AppColors.accentAmber,
                       size: 20,
                     ),
                     const SizedBox(width: 10),
