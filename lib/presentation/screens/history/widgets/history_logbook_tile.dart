@@ -85,34 +85,89 @@ class HistoryLogbookTile extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
-                          borderRadius: BorderRadius.circular(10),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(LucideIcons.fileText, color: AppColors.primary, size: 18),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Logbook $formattedDate',
+                          style: const TextStyle(
+                            fontSize: 14.5,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                        child: const Icon(LucideIcons.fileText, color: AppColors.primary, size: 18),
+                        const SizedBox(height: 2),
+                        StatusBadge(label: entry.statusDisplayName, variant: variant, fontSize: 10.5),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  PopupMenuButton<String>(
+                    icon: const Icon(LucideIcons.moreVertical, size: 18, color: AppColors.textSecondary),
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    tooltip: 'Opsi Logbook',
+                    onSelected: (val) async {
+                      if (val == 'copy') {
+                        await Clipboard.setData(ClipboardData(text: entry.generatedTemplate));
+                        onCopied();
+                      } else if (val == 'edit') {
+                        onEdit();
+                      } else if (val == 'delete') {
+                        onDelete();
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      const PopupMenuItem(
+                        value: 'copy',
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.copy, size: 16, color: AppColors.primary),
+                            SizedBox(width: 10),
+                            Text('Salin Laporan', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
                       ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Logbook $formattedDate',
-                        style: const TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.edit2, size: 16, color: AppColors.info),
+                            SizedBox(width: 10),
+                            Text('Edit Logbook', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(LucideIcons.trash2, size: 16, color: AppColors.danger),
+                            SizedBox(width: 10),
+                            Text('Hapus', style: TextStyle(fontSize: 13, color: AppColors.danger)),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                  StatusBadge(label: entry.statusDisplayName, variant: variant, fontSize: 11),
                 ],
               ),
               const SizedBox(height: 10),
               Text(
-                entry.activities,
+                entry.activities.isEmpty ? 'Tidak ada catatan aktivitas.' : entry.activities,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
@@ -123,17 +178,19 @@ class HistoryLogbookTile extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Kendala: ${entry.obstacles}',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  Expanded(
+                    child: Text(
+                      'Kendala: ${entry.obstacles.isEmpty ? "Tidak ada kendala" : entry.obstacles}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 11.5,
+                        color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                      ),
                     ),
                   ),
+                  const SizedBox(width: 8),
                   const Icon(LucideIcons.chevronRight, size: 16, color: AppColors.textTertiary),
                 ],
               ),
@@ -199,6 +256,32 @@ class HistoryLogbookTile extends StatelessWidget {
               const SizedBox(height: 14),
               Row(
                 children: [
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      onDelete();
+                    },
+                    icon: const Icon(LucideIcons.trash2, size: 15, color: AppColors.danger),
+                    label: const Text('Hapus', style: TextStyle(color: AppColors.danger, fontSize: 13)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.danger),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(ctx).pop();
+                      onEdit();
+                    },
+                    icon: const Icon(LucideIcons.edit2, size: 15, color: AppColors.info),
+                    label: const Text('Edit', style: TextStyle(color: AppColors.info, fontSize: 13)),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: AppColors.info),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: ElevatedButton.icon(
                       onPressed: () async {
@@ -208,8 +291,11 @@ class HistoryLogbookTile extends StatelessWidget {
                           onCopied();
                         }
                       },
-                      icon: const Icon(LucideIcons.copy, size: 16),
-                      label: const Text('Salin Laporan'),
+                      icon: const Icon(LucideIcons.copy, size: 15),
+                      label: const Text('Salin Laporan', style: TextStyle(fontSize: 13)),
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
                     ),
                   ),
                 ],

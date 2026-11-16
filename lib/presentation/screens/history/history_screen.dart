@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_formatter.dart';
+import '../../../data/models/activity_history.dart';
 import '../../../data/models/attendance_record.dart';
 import '../../../data/models/logbook_entry.dart';
 import '../../../providers/app_providers.dart';
@@ -341,6 +342,45 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                           ],
                         ),
                       ),
+                      const SizedBox(width: 4),
+                      PopupMenuButton<String>(
+                        icon: const Icon(LucideIcons.moreVertical, size: 16, color: AppColors.textTertiary),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        tooltip: 'Opsi Aktivitas',
+                        onSelected: (val) {
+                          if (val == 'open_logbook') {
+                            if (widget.onNavigateTab != null) {
+                              widget.onNavigateTab!(2);
+                            }
+                          } else if (val == 'delete') {
+                            _handleDeleteActivity(act);
+                          }
+                        },
+                        itemBuilder: (context) => [
+                          if (act.metadata?.startsWith('entry_id:') == true)
+                            const PopupMenuItem(
+                              value: 'open_logbook',
+                              child: Row(
+                                children: [
+                                  Icon(LucideIcons.fileText, size: 15, color: AppColors.primary),
+                                  SizedBox(width: 8),
+                                  Text('Buka Logbook', style: TextStyle(fontSize: 12.5)),
+                                ],
+                              ),
+                            ),
+                          const PopupMenuItem(
+                            value: 'delete',
+                            child: Row(
+                              children: [
+                                Icon(LucideIcons.trash2, size: 15, color: AppColors.danger),
+                                SizedBox(width: 8),
+                                Text('Hapus Log', style: TextStyle(fontSize: 12.5, color: AppColors.danger)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -420,6 +460,28 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Laporan logbook telah dihapus.')),
+        );
+      }
+    }
+  }
+
+  void _handleDeleteActivity(ActivityHistory act) async {
+    final confirmed = await ConfirmDialog.show(
+      context,
+      title: 'Hapus Log Aktivitas?',
+      message: 'Apakah Anda yakin ingin menghapus catatan log aktivitas ini?',
+      confirmText: 'Hapus Log',
+      isDestructive: true,
+      icon: LucideIcons.trash2,
+    );
+
+    if (confirmed == true && act.id != null) {
+      final repo = ref.read(activityHistoryRepositoryProvider);
+      await repo.deleteActivity(act.id!);
+      ref.invalidate(allActivityHistoryListProvider);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Catatan log aktivitas telah dihapus.')),
         );
       }
     }

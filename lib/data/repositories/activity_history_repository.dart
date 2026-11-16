@@ -76,4 +76,26 @@ class ActivityHistoryRepository {
       throw AppDatabaseException('Gagal menyimpan riwayat aktivitas: $e');
     }
   }
+
+  Future<void> deleteActivity(int id) async {
+    try {
+      final db = await _dbHelper.database;
+      await db.delete(
+        AppConstants.tableActivityHistory,
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw AppDatabaseException('Gagal menghapus riwayat aktivitas: $e');
+    }
+  }
+
+  Future<void> clearAllActivities() async {
+    try {
+      final db = await _dbHelper.database;
+      await db.delete(AppConstants.tableActivityHistory);
+    } catch (e) {
+      throw AppDatabaseException('Gagal membersihkan riwayat aktivitas: $e');
+    }
+  }
 }

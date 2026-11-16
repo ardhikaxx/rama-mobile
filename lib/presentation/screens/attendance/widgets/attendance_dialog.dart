@@ -209,6 +209,7 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
     final isSelected = _selectedStatus == value;
 
     return ChoiceChip(
+      showCheckmark: false,
       label: Row(
         mainAxisSize: MainAxisSize.min,
         children: [

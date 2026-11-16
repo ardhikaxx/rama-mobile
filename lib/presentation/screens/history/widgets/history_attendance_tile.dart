@@ -71,6 +71,7 @@ class HistoryAttendanceTile extends StatelessWidget {
         ),
         child: AppCard(
           padding: const EdgeInsets.all(14),
+          onTap: onEdit,
           child: Row(
             children: [
               Container(
@@ -91,15 +92,19 @@ class HistoryAttendanceTile extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          record.typeDisplayName,
-                          style: const TextStyle(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.w700,
+                        Expanded(
+                          child: Text(
+                            record.typeDisplayName,
+                            style: const TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
                           ),
                         ),
+                        const SizedBox(width: 6),
                         StatusBadge(
                           label: record.statusDisplayName,
                           variant: variant,
@@ -131,6 +136,42 @@ class HistoryAttendanceTile extends StatelessWidget {
                     ],
                   ],
                 ),
+              ),
+              const SizedBox(width: 4),
+              PopupMenuButton<String>(
+                icon: const Icon(LucideIcons.moreVertical, size: 18, color: AppColors.textSecondary),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: 'Opsi Absensi',
+                onSelected: (val) {
+                  if (val == 'edit') {
+                    onEdit();
+                  } else if (val == 'delete') {
+                    onDelete();
+                  }
+                },
+                itemBuilder: (context) => [
+                  const PopupMenuItem(
+                    value: 'edit',
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.edit2, size: 16, color: AppColors.primary),
+                        SizedBox(width: 10),
+                        Text('Koreksi / Edit', style: TextStyle(fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                  const PopupMenuItem(
+                    value: 'delete',
+                    child: Row(
+                      children: [
+                        Icon(LucideIcons.trash2, size: 16, color: AppColors.danger),
+                        SizedBox(width: 10),
+                        Text('Hapus', style: TextStyle(fontSize: 13, color: AppColors.danger)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
