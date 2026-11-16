@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/app_snackbar.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../data/models/reminder_schedule.dart';
 import '../../../providers/reminder_provider.dart';
@@ -497,8 +498,9 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
       if (days.length > 1) {
         days.remove(day);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Minimal satu hari aktif harus dipilih.')),
+        AppSnackBar.showWarning(
+          context,
+          message: 'Minimal satu hari aktif harus dipilih.',
         );
         return;
       }
@@ -513,11 +515,9 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
     final granted = await PermissionService.requestNotificationPermission();
     if (!granted) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Izin notifikasi belum aktif. Silakan izinkan notifikasi terlebih dahulu.'),
-            backgroundColor: AppColors.danger,
-          ),
+        AppSnackBar.showError(
+          context,
+          message: 'Izin notifikasi belum aktif. Silakan izinkan notifikasi terlebih dahulu.',
         );
       }
       return;
@@ -549,15 +549,11 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
     }
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            isAttendance
-                ? 'Notifikasi native Absensi telah dikirim ke bilah status!'
-                : 'Notifikasi native Logbook telah dikirim ke bilah status!',
-          ),
-          backgroundColor: AppColors.success,
-        ),
+      AppSnackBar.showSuccess(
+        context,
+        message: isAttendance
+            ? 'Notifikasi native Absensi telah dikirim ke bilah status!'
+            : 'Notifikasi native Logbook telah dikirim ke bilah status!',
       );
     }
   }

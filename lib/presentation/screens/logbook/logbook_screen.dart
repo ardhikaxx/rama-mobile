@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/app_snackbar.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/sentence_expander.dart';
 import '../../../data/models/logbook_entry.dart';
@@ -94,11 +95,9 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               _obstaclesController.clear();
               logbookNotifier.selectDate(DateTime.now());
               setState(() => _selectedTab = 0);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Form logbook telah direset.'),
-                  duration: Duration(seconds: 2),
-                ),
+              AppSnackBar.showInfo(
+                context,
+                message: 'Form logbook telah direset.',
               );
             },
           ),
@@ -415,21 +414,17 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   onPressed: () {
                     final actInput = _activitiesController.text.trim();
                     if (actInput.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Isi Uraian Aktivitas terlebih dahulu.'),
-                          backgroundColor: AppColors.warning,
-                        ),
+                      AppSnackBar.showWarning(
+                        context,
+                        message: 'Isi Uraian Aktivitas terlebih dahulu.',
                       );
                       return;
                     }
                     final generated = SentenceExpander.expandLearnings('', actInput);
                     setState(() => _learningsController.text = generated);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✨ Pembelajaran diselaraskan dari aktivitas!'),
-                        backgroundColor: AppColors.success,
-                      ),
+                    AppSnackBar.showSuccess(
+                      context,
+                      message: '✨ Pembelajaran diselaraskan dari aktivitas!',
                     );
                   },
                   icon: const Icon(LucideIcons.sparkles, size: 13),
@@ -462,7 +457,8 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 Expanded(
                   child: _buildFieldHeader(
                     title: '3. Kendala yang Dihadapi',
-                    subtitle: 'Opsional (otomatis standar kedinasan jika kosong)',
+                    subtitle: 'Ketik kendala Anda atau klik tombol "Tidak Ada Kendala"',
+                    isRequired: true,
                     isDark: isDark,
                   ),
                 ),
@@ -486,8 +482,14 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             TextFormField(
               controller: _obstaclesController,
               maxLines: 3,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return 'Silakan ketik kendala yang dihadapi atau klik tombol "Tidak Ada Kendala"';
+                }
+                return null;
+              },
               decoration: const InputDecoration(
-                hintText: 'Ketik kendala di lapangan/kantor, atau klik "Tidak Ada Kendala"...',
+                hintText: 'Ketik kendala di lapangan/kantor, atau klik tombol "Tidak Ada Kendala" di atas...',
               ),
             ),
 
@@ -518,11 +520,9 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   void _generatePreviewAndSwitch(bool validate) {
     if (validate) {
       if (!(_formKey.currentState?.validate() ?? false)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Silakan lengkapi uraian aktivitas magang terlebih dahulu.'),
-            backgroundColor: AppColors.warning,
-          ),
+        AppSnackBar.showWarning(
+          context,
+          message: 'Silakan lengkapi kolom yang wajib diisi terlebih dahulu.',
         );
         return;
       }
@@ -534,9 +534,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
       learnInput = SentenceExpander.expandLearnings('', actInput);
     }
 
-    final obsInput = _obstaclesController.text.trim().isEmpty
-        ? SentenceExpander.getNextNoObstacleMessage()
-        : _obstaclesController.text;
+    final obsInput = _obstaclesController.text.trim();
 
     final finalActivities = SentenceExpander.expandActivities(actInput);
     final finalLearnings = SentenceExpander.expandLearnings(learnInput, actInput);
@@ -631,44 +629,36 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             onCopyActivities: () async {
               await Clipboard.setData(ClipboardData(text: activitiesText));
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Uraian Aktivitas berhasil disalin ke clipboard!'),
-                    backgroundColor: AppColors.primary,
-                  ),
+                AppSnackBar.showSuccess(
+                  context,
+                  message: 'Uraian Aktivitas berhasil disalin ke clipboard!',
                 );
               }
             },
             onCopyLearnings: () async {
               await Clipboard.setData(ClipboardData(text: learningsText));
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Pembelajaran yang Diperoleh berhasil disalin ke clipboard!'),
-                    backgroundColor: AppColors.success,
-                  ),
+                AppSnackBar.showSuccess(
+                  context,
+                  message: 'Pembelajaran yang Diperoleh berhasil disalin ke clipboard!',
                 );
               }
             },
             onCopyObstacles: () async {
               await Clipboard.setData(ClipboardData(text: obstaclesText));
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Kendala yang Dihadapi berhasil disalin ke clipboard!'),
-                    backgroundColor: Color(0xFFD97706),
-                  ),
+                AppSnackBar.showWarning(
+                  context,
+                  message: 'Kendala yang Dihadapi berhasil disalin ke clipboard!',
                 );
               }
             },
             onCopyAll: () async {
               await notifier.copyReportToClipboard();
               if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Seluruh format logbook lengkap berhasil disalin ke clipboard!'),
-                    backgroundColor: AppColors.primary,
-                  ),
+                AppSnackBar.showSuccess(
+                  context,
+                  message: 'Seluruh format logbook lengkap berhasil disalin ke clipboard!',
                 );
               }
             },
@@ -676,19 +666,16 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               try {
                 await notifier.saveLogbook();
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        'Logbook tanggal ${DateFormatter.formatIndonesianDateShort(state.selectedDate)} berhasil disimpan!',
-                      ),
-                      backgroundColor: AppColors.success,
-                    ),
+                  AppSnackBar.showSuccess(
+                    context,
+                    message: 'Logbook tanggal ${DateFormatter.formatIndonesianDateShort(state.selectedDate)} berhasil disimpan!',
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal menyimpan: $e')),
+                  AppSnackBar.showError(
+                    context,
+                    message: 'Gagal menyimpan: $e',
                   );
                 }
               }
@@ -700,17 +687,16 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               try {
                 await notifier.markAsSubmitted();
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Status logbook ditandai telah dikirim ke portal!'),
-                      backgroundColor: AppColors.success,
-                    ),
+                  AppSnackBar.showSuccess(
+                    context,
+                    message: 'Status logbook ditandai telah dikirim ke portal!',
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Gagal memperbarui status: $e')),
+                  AppSnackBar.showError(
+                    context,
+                    message: 'Gagal memperbarui status: $e',
                   );
                 }
               }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/constants/app_constants.dart';
+import '../../../../core/utils/app_snackbar.dart';
 import '../../../../providers/attendance_provider.dart';
 import '../../../../providers/dashboard_provider.dart';
 import '../../../../providers/logbook_provider.dart';
@@ -135,10 +136,9 @@ class DashboardScreen extends ConsumerWidget {
 
   void _handleAttendance(BuildContext context, WidgetRef ref, bool alreadyDone) {
     if (alreadyDone) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Absensi magang hari ini sudah tercatat. Buka tab Presensi untuk koreksi data.'),
-        ),
+      AppSnackBar.showInfo(
+        context,
+        message: 'Absensi magang hari ini sudah tercatat. Buka tab Presensi untuk koreksi data.',
       );
       onNavigateTab(1); // navigate to Attendance tab
       return;
@@ -155,14 +155,16 @@ class DashboardScreen extends ConsumerWidget {
             notes: notes,
           );
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Absensi magang sebelum pulang berhasil dicatat!')),
+            AppSnackBar.showSuccess(
+              context,
+              message: 'Absensi magang sebelum pulang berhasil dicatat!',
             );
           }
         } catch (e) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString())),
+            AppSnackBar.showError(
+              context,
+              message: e.toString(),
             );
           }
         }

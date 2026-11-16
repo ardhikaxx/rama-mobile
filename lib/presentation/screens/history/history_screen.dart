@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/app_snackbar.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../data/models/activity_history.dart';
 import '../../../data/models/attendance_record.dart';
@@ -251,11 +252,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
                 },
                 onDelete: () => _handleDeleteLogbook(entry),
                 onCopied: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Laporan logbook disalin ke clipboard!'),
-                      backgroundColor: AppColors.primary,
-                    ),
+                  AppSnackBar.showSuccess(
+                    context,
+                    message: 'Laporan logbook disalin ke clipboard!',
                   );
                   ref.invalidate(logbookHistoryListProvider);
                 },
@@ -407,14 +406,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
           await ref.read(attendanceProvider.notifier).updateRecord(updated);
           ref.invalidate(attendanceHistoryListProvider);
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Data absensi berhasil diperbarui!')),
+            AppSnackBar.showSuccess(
+              context,
+              message: 'Data absensi berhasil diperbarui!',
             );
           }
         } catch (e) {
           if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString())),
+            AppSnackBar.showError(
+              context,
+              message: e.toString(),
             );
           }
         }
@@ -436,8 +437,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
       await ref.read(attendanceProvider.notifier).deleteRecord(record.id!);
       ref.invalidate(attendanceHistoryListProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Data absensi telah dihapus.')),
+        AppSnackBar.showInfo(
+          context,
+          message: 'Data absensi telah dihapus.',
         );
       }
     }
@@ -458,8 +460,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
       await repo.deleteLogbook(entry.id!);
       ref.invalidate(logbookHistoryListProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Laporan logbook telah dihapus.')),
+        AppSnackBar.showInfo(
+          context,
+          message: 'Laporan logbook telah dihapus.',
         );
       }
     }
@@ -480,8 +483,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
       await repo.deleteActivity(act.id!);
       ref.invalidate(allActivityHistoryListProvider);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Catatan log aktivitas telah dihapus.')),
+        AppSnackBar.showInfo(
+          context,
+          message: 'Catatan log aktivitas telah dihapus.',
         );
       }
     }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
+import '../../../core/utils/app_snackbar.dart';
 import '../../../providers/app_providers.dart';
 import '../../../providers/attendance_provider.dart';
 import '../../../providers/logbook_provider.dart';
@@ -93,14 +94,14 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                         iconColor: AppColors.primary,
                         buttonLabel: 'Ekspor Backup',
                         onTap: () async {
-                          final messenger = ScaffoldMessenger.of(context);
                           setState(() => _isLoading = true);
                           try {
                             await exportService.shareBackupFile();
                           } catch (e) {
-                            if (mounted) {
-                              messenger.showSnackBar(
-                                SnackBar(content: Text('Gagal mengekspor: $e')),
+                            if (context.mounted) {
+                              AppSnackBar.showError(
+                                context,
+                                message: 'Gagal mengekspor: $e',
                               );
                             }
                           } finally {
@@ -117,7 +118,6 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                         buttonLabel: 'Pilih Berkas',
                         isOutlined: true,
                         onTap: () async {
-                          final messenger = ScaffoldMessenger.of(context);
                           final data = await exportService.pickAndParseBackupFile();
                           if (data == null || !context.mounted) return;
 
@@ -141,18 +141,17 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                               ref.invalidate(attendanceProvider);
                               ref.invalidate(logbookProvider);
 
-                              if (mounted) {
-                                messenger.showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Data cadangan berhasil dipulihkan!'),
-                                    backgroundColor: AppColors.success,
-                                  ),
+                              if (context.mounted) {
+                                AppSnackBar.showSuccess(
+                                  context,
+                                  message: 'Data cadangan berhasil dipulihkan!',
                                 );
                               }
                             } catch (e) {
-                              if (mounted) {
-                                messenger.showSnackBar(
-                                  SnackBar(content: Text('Gagal memulihkan data: $e')),
+                              if (context.mounted) {
+                                AppSnackBar.showError(
+                                  context,
+                                  message: 'Gagal memulihkan data: $e',
                                 );
                               }
                             } finally {
@@ -184,14 +183,14 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                         iconColor: AppColors.success,
                         buttonLabel: 'Ekspor Absensi',
                         onTap: () async {
-                          final messenger = ScaffoldMessenger.of(context);
                           setState(() => _isLoading = true);
                           try {
                             await exportService.shareAttendanceCsv();
                           } catch (e) {
-                            if (mounted) {
-                              messenger.showSnackBar(
-                                SnackBar(content: Text('Gagal mengekspor CSV: $e')),
+                            if (context.mounted) {
+                              AppSnackBar.showError(
+                                context,
+                                message: 'Gagal mengekspor CSV: $e',
                               );
                             }
                           } finally {
@@ -207,14 +206,14 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                         iconColor: AppColors.info,
                         buttonLabel: 'Ekspor Logbook',
                         onTap: () async {
-                          final messenger = ScaffoldMessenger.of(context);
                           setState(() => _isLoading = true);
                           try {
                             await exportService.shareLogbookCsv();
                           } catch (e) {
-                            if (mounted) {
-                              messenger.showSnackBar(
-                                SnackBar(content: Text('Gagal mengekspor CSV: $e')),
+                            if (context.mounted) {
+                              AppSnackBar.showError(
+                                context,
+                                message: 'Gagal mengekspor CSV: $e',
                               );
                             }
                           } finally {

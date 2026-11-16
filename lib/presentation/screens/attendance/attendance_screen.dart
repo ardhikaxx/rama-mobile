@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/app_snackbar.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../data/models/attendance_record.dart';
 import '../../../data/models/reminder_schedule.dart';
@@ -164,17 +165,16 @@ class AttendanceScreen extends ConsumerWidget {
             notes: notes,
           );
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Absensi magang sebelum pulang berhasil dicatat!'),
-                backgroundColor: AppColors.success,
-              ),
+            AppSnackBar.showSuccess(
+              context,
+              message: 'Absensi magang sebelum pulang berhasil dicatat!',
             );
           }
         } catch (e) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString())),
+            AppSnackBar.showError(
+              context,
+              message: e.toString(),
             );
           }
         }
@@ -196,17 +196,16 @@ class AttendanceScreen extends ConsumerWidget {
           );
           await ref.read(attendanceProvider.notifier).updateRecord(updated);
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Data absensi magang berhasil diperbarui!'),
-                backgroundColor: AppColors.success,
-              ),
+            AppSnackBar.showSuccess(
+              context,
+              message: 'Data absensi magang berhasil diperbarui!',
             );
           }
         } catch (e) {
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString())),
+            AppSnackBar.showError(
+              context,
+              message: e.toString(),
             );
           }
         }
