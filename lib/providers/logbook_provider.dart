@@ -130,7 +130,7 @@ class LogbookNotifier extends StateNotifier<LogbookState> {
     final rawObs = obstacles ?? state.obstacles;
 
     final finalActivities = SentenceExpander.expandActivities(rawAct);
-    final finalLearnings = SentenceExpander.expandLearnings(rawLearn);
+    final finalLearnings = SentenceExpander.expandLearnings(rawLearn, rawAct);
     final finalObstacles = SentenceExpander.expandObstacles(rawObs);
 
     final report = LogbookEntry.generateTemplateText(
