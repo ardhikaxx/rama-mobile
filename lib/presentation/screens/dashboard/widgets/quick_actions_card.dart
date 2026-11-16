@@ -4,16 +4,16 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../widgets/app_card.dart';
 
 class QuickActionsCard extends StatelessWidget {
-  final VoidCallback onAttendanceTap;
-  final VoidCallback onLogbookTap;
   final VoidCallback onCalendarTap;
+  final VoidCallback onStatisticsTap;
+  final VoidCallback onLogbookTap;
   final VoidCallback onHistoryTap;
 
   const QuickActionsCard({
     super.key,
-    required this.onAttendanceTap,
-    required this.onLogbookTap,
     required this.onCalendarTap,
+    required this.onStatisticsTap,
+    required this.onLogbookTap,
     required this.onHistoryTap,
   });
 
@@ -35,24 +35,24 @@ class QuickActionsCard extends StatelessWidget {
             Expanded(
               child: _buildActionButton(
                 context,
-                label: 'Absensi Magang',
-                subtitle: 'Sebelum Pulang',
-                icon: LucideIcons.calendarCheck,
-                color: AppColors.primary,
-                bgColor: AppColors.primaryContainer,
-                onTap: onAttendanceTap,
+                label: 'Kalender Magang',
+                subtitle: 'Pantau Jadwal',
+                icon: LucideIcons.calendar,
+                color: const Color(0xFF8B5CF6),
+                bgColor: const Color(0xFFF3E8FF),
+                onTap: onCalendarTap,
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: _buildActionButton(
                 context,
-                label: 'Buat Logbook',
-                subtitle: 'Generator Cepat',
-                icon: LucideIcons.filePlus,
-                color: AppColors.success,
-                bgColor: AppColors.successLight,
-                onTap: onLogbookTap,
+                label: 'Statistik & Rekap',
+                subtitle: 'Grafik & Kepatuhan',
+                icon: LucideIcons.barChart2,
+                color: AppColors.accentAmber,
+                bgColor: AppColors.primaryContainer,
+                onTap: onStatisticsTap,
               ),
             ),
           ],
@@ -63,12 +63,12 @@ class QuickActionsCard extends StatelessWidget {
             Expanded(
               child: _buildActionButton(
                 context,
-                label: 'Kalender Magang',
-                subtitle: 'Pantau Jadwal',
-                icon: LucideIcons.calendar,
-                color: const Color(0xFF8B5CF6),
-                bgColor: const Color(0xFFF3E8FF),
-                onTap: onCalendarTap,
+                label: 'Buat Logbook',
+                subtitle: 'Generator Cepat',
+                icon: LucideIcons.filePlus,
+                color: AppColors.success,
+                bgColor: AppColors.successLight,
+                onTap: onLogbookTap,
               ),
             ),
             const SizedBox(width: 10),
