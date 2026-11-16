@@ -237,12 +237,12 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _buildChip('Pengembangan Fitur', _activitiesController),
-              _buildChip('Analisis Data', _activitiesController),
-              _buildChip('Meeting Tim', _activitiesController),
-              _buildChip('Testing Aplikasi', _activitiesController),
-              _buildChip('Perbaikan Bug', _activitiesController),
-              _buildChip('Penyusunan Dokumentasi', _activitiesController),
+              _buildChip('Pengembangan Fitur', _activitiesController, isDark),
+              _buildChip('Analisis Data', _activitiesController, isDark),
+              _buildChip('Meeting Tim', _activitiesController, isDark),
+              _buildChip('Testing Aplikasi', _activitiesController, isDark),
+              _buildChip('Perbaikan Bug', _activitiesController, isDark),
+              _buildChip('Penyusunan Dokumentasi', _activitiesController, isDark),
             ],
           ),
 
@@ -330,11 +330,11 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _buildChip('Teknologi Baru', _learningsController),
-              _buildChip('Version Control Git', _learningsController),
-              _buildChip('Kerja Sama Tim', _learningsController),
-              _buildChip('Manajemen Waktu', _learningsController),
-              _buildChip('Problem Solving', _learningsController),
+              _buildChip('Teknologi Baru', _learningsController, isDark),
+              _buildChip('Version Control Git', _learningsController, isDark),
+              _buildChip('Kerja Sama Tim', _learningsController, isDark),
+              _buildChip('Manajemen Waktu', _learningsController, isDark),
+              _buildChip('Problem Solving', _learningsController, isDark),
             ],
           ),
 
@@ -484,10 +484,10 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _buildChip('Koneksi Jaringan Lambat', _obstaclesController),
-              _buildChip('Error Kode Program', _obstaclesController),
-              _buildChip('Penyesuaian Alur Kerja', _obstaclesController),
-              _buildChip('Tidak Ada Kendala', _obstaclesController),
+              _buildChip('Koneksi Jaringan Lambat', _obstaclesController, isDark),
+              _buildChip('Error Kode Program', _obstaclesController, isDark),
+              _buildChip('Penyesuaian Alur Kerja', _obstaclesController, isDark),
+              _buildChip('Tidak Ada Kendala', _obstaclesController, isDark),
             ],
           ),
 
@@ -720,23 +720,50 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     );
   }
 
-  Widget _buildChip(String text, TextEditingController controller) {
-    return ActionChip(
-      label: Text(
-        '+ $text',
-        style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600),
+  Widget _buildChip(String text, TextEditingController controller, bool isDark) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          final current = controller.text.trim();
+          if (current.isEmpty) {
+            controller.text = text;
+          } else {
+            controller.text = '$current\n$text';
+          }
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                LucideIcons.plus,
+                size: 13,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                text,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
-      backgroundColor: const Color(0xFFF1F5F9),
-      side: const BorderSide(color: Color(0xFFE2E8F0)),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      onPressed: () {
-        final current = controller.text.trim();
-        if (current.isEmpty) {
-          controller.text = text;
-        } else {
-          controller.text = '$current\n$text';
-        }
-      },
     );
   }
 }
