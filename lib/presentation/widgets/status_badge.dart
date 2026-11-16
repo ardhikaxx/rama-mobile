@@ -21,35 +21,37 @@ class StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     Color bg;
     Color text;
     Color border;
 
     switch (variant) {
       case BadgeVariant.success:
-        bg = AppColors.successLight;
-        text = AppColors.successDark;
-        border = AppColors.success.withValues(alpha: 0.3);
+        bg = isDark ? const Color(0xFF064E3B).withValues(alpha: 0.45) : AppColors.successLight;
+        text = isDark ? const Color(0xFF6EE7B7) : AppColors.successDark;
+        border = isDark ? const Color(0xFF10B981).withValues(alpha: 0.4) : AppColors.success.withValues(alpha: 0.3);
         break;
       case BadgeVariant.warning:
-        bg = AppColors.warningLight;
-        text = AppColors.warningDark;
-        border = AppColors.warning.withValues(alpha: 0.3);
+        bg = isDark ? AppColors.darkPrimaryContainer : AppColors.primaryContainer;
+        text = isDark ? AppColors.primary : const Color(0xFF92400E);
+        border = isDark ? AppColors.primary.withValues(alpha: 0.3) : AppColors.primary.withValues(alpha: 0.4);
         break;
       case BadgeVariant.danger:
-        bg = AppColors.dangerLight;
-        text = AppColors.dangerDark;
-        border = AppColors.danger.withValues(alpha: 0.3);
+        bg = isDark ? const Color(0xFF7F1D1D).withValues(alpha: 0.45) : AppColors.dangerLight;
+        text = isDark ? const Color(0xFFFCA5A5) : AppColors.dangerDark;
+        border = isDark ? const Color(0xFFEF4444).withValues(alpha: 0.4) : AppColors.danger.withValues(alpha: 0.3);
         break;
       case BadgeVariant.info:
-        bg = AppColors.infoLight;
-        text = AppColors.primary;
-        border = AppColors.primary.withValues(alpha: 0.3);
+        bg = isDark ? const Color(0xFF1E3A8A).withValues(alpha: 0.45) : AppColors.infoLight;
+        text = isDark ? const Color(0xFF93C5FD) : const Color(0xFF1D4ED8);
+        border = isDark ? const Color(0xFF3B82F6).withValues(alpha: 0.4) : AppColors.info.withValues(alpha: 0.3);
         break;
       case BadgeVariant.neutral:
-        bg = const Color(0xFFF1F5F9);
-        text = AppColors.textSecondary;
-        border = AppColors.border;
+        bg = isDark ? AppColors.darkSurfaceElevated : AppColors.divider;
+        text = isDark ? AppColors.darkTextSecondary : AppColors.textSecondary;
+        border = isDark ? AppColors.darkBorder : AppColors.border;
         break;
     }
 
