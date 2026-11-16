@@ -425,44 +425,131 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
 
           const SizedBox(height: 14),
 
-          // Quick Action Card: Tidak Ada Kendala
-          InkWell(
-            onTap: () {
-              _obstaclesController.text = 'Tidak ada kendala';
-            },
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: const Color(0xFF86EFAC),
-                  width: 1.2,
-                ),
+          // Quick Action Card: Pilihan Template Tidak Ada Kendala
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF0FDF4),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFF86EFAC),
+                width: 1.2,
               ),
-              child: const Row(
-                children: [
-                  Icon(LucideIcons.sparkles, size: 18, color: AppColors.success),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Klik di Sini: Hari Ini Lancar (Tidak Ada Kendala)',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: AppColors.successDark),
-                        ),
-                        Text(
-                          'Sistem otomatis merangkai pernyataan bahwa kegiatan berjalan baik tanpa kendala.',
-                          style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                        ),
-                      ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(LucideIcons.sparkles, size: 18, color: AppColors.success),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Pilihan Cepat: Hari Ini Lancar (Tanpa Kendala)',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.successDark),
+                      ),
                     ),
-                  ),
-                  Icon(LucideIcons.checkCircle, size: 18, color: AppColors.success),
-                ],
-              ),
+                    InkWell(
+                      onTap: () {
+                        setState(() {
+                          _obstaclesController.text = SentenceExpander.defaultNoObstacle;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.success,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'Pilih Utama',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                const Text(
+                  'Klik salah satu template kalimat di bawah jika seluruh kegiatan magang berjalan tanpa kendala:',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.35),
+                ),
+                const SizedBox(height: 10),
+                ...SentenceExpander.noObstacleTemplates.asMap().entries.map((entry) {
+                  final idx = entry.key;
+                  final template = entry.value;
+                  final isSelected = _obstaclesController.text.trim() == template;
+
+                  final titles = [
+                    'Template 1: Selesai Sesuai Target',
+                    'Template 2: Koordinasi & Mentor Baik',
+                    'Template 3: Sarana & Sistem Optimal',
+                  ];
+
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 6),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          _obstaclesController.text = template;
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? (isDark ? const Color(0xFF14532D).withValues(alpha: 0.4) : const Color(0xFFDCFCE7))
+                              : (isDark ? AppColors.darkSurface : Colors.white),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isSelected ? const Color(0xFF22C55E) : (isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0)),
+                            width: isSelected ? 1.5 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              isSelected ? LucideIcons.checkCircle2 : LucideIcons.circle,
+                              size: 16,
+                              color: isSelected ? AppColors.success : AppColors.textTertiary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    titles[idx],
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: isSelected
+                                          ? AppColors.successDark
+                                          : (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    template,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      height: 1.35,
+                                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
 
@@ -727,12 +814,18 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          final current = controller.text.trim();
-          if (current.isEmpty) {
-            controller.text = text;
-          } else {
-            controller.text = '$current\n$text';
-          }
+          setState(() {
+            if (text == 'Tidak Ada Kendala') {
+              controller.text = SentenceExpander.defaultNoObstacle;
+            } else {
+              final current = controller.text.trim();
+              if (current.isEmpty) {
+                controller.text = text;
+              } else {
+                controller.text = '$current\n$text';
+              }
+            }
+          });
         },
         borderRadius: BorderRadius.circular(20),
         child: Container(

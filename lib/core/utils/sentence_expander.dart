@@ -110,16 +110,31 @@ class SentenceExpander {
     }
   }
 
+  /// Default formal sentence when there are no obstacles during internship.
+  static const String defaultNoObstacle =
+      'Tidak ada kendala berarti selama kegiatan magang berlangsung, seluruh aktivitas dan tugas harian dapat diselesaikan dengan baik, lancar, serta sesuai target.';
+
+  /// Preset templates for smooth internship activities without obstacles.
+  static const List<String> noObstacleTemplates = [
+    'Tidak ada kendala berarti selama kegiatan magang berlangsung, seluruh aktivitas dan tugas harian dapat diselesaikan dengan baik, lancar, serta sesuai target.',
+    'Seluruh kegiatan magang hari ini berjalan dengan lancar tanpa hambatan, didukung oleh koordinasi tim yang solid serta bimbingan yang jelas dari mentor lapangan.',
+    'Tidak ditemui kendala teknis maupun operasional, seluruh sarana kerja dan sistem pendukung berfungsi optimal mendukung kelancaran pekerjaan hari ini.',
+  ];
+
   /// Automatically expands brief obstacle keywords/phrases into formal Indonesian sentences.
   static String expandObstacles(String rawInput) {
     final trimmed = rawInput.trim();
     if (trimmed.isEmpty) {
-      return 'Tidak ada kendala berarti selama kegiatan magang berlangsung, seluruh aktivitas dapat diselesaikan dengan baik dan lancar.';
+      return defaultNoObstacle;
     }
 
     final lower = trimmed.toLowerCase();
-    if (_containsAny(lower, ['tidak ada', 'nihil', 'aman', 'lancar', 'none', 'tidak ada kendala', 'tidak ada hambatan', 'baik', 'oke', 'ok', 'no obstacle'])) {
-      return 'Tidak ada kendala berarti selama kegiatan magang berlangsung, seluruh aktivitas dapat diselesaikan dengan baik dan lancar.';
+    if (_containsAny(lower, ['tidak ada', 'nihil', 'aman', 'lancar', 'none', 'tidak ada kendala', 'tidak ada hambatan', 'baik', 'oke', 'ok', 'no obstacle', 'tanpa kendala', 'tanpa hambatan'])) {
+      // If user typed or picked a full formal sentence already, return it cleanly
+      if (trimmed.length >= 30) {
+        return trimmed.endsWith('.') ? trimmed : '$trimmed.';
+      }
+      return defaultNoObstacle;
     }
 
     final clean = _cleanBulletOrNumber(trimmed);
