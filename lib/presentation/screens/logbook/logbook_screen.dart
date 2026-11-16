@@ -269,7 +269,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   }
 
   // --------------------------------------------------------------------------
-  // TAB 1: FORM PENGISIAN LENGKAP
+  // TAB 1: FORM PENGISIAN LENGKAP (SIMPLE & BERSIH)
   // --------------------------------------------------------------------------
   Widget _buildFormView(
     BuildContext context,
@@ -277,10 +277,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     LogbookState state,
     LogbookNotifier notifier,
   ) {
-    final expandedActivities = SentenceExpander.expandActivities(_activitiesController.text);
-    final expandedLearnings = SentenceExpander.expandLearnings(_learningsController.text, _activitiesController.text);
-    final expandedObstacles = SentenceExpander.expandObstacles(_obstaclesController.text);
-
     final isSaved = state.currentEntry != null;
 
     return SingleChildScrollView(
@@ -380,9 +376,9 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
 
             const SizedBox(height: 14),
 
-            // Smart Fill: AI Auto-Generate Card
+            // Smart Fill: Input Cepat 1 Kalimat (Simple & Ringkas)
             Container(
-              padding: const EdgeInsets.all(14),
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFFFFBEB),
                 borderRadius: BorderRadius.circular(14),
@@ -397,34 +393,24 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(6),
+                        padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
                           color: AppColors.primary,
                           borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(LucideIcons.sparkles, size: 15, color: AppColors.onPrimary),
+                        child: const Icon(LucideIcons.sparkles, size: 14, color: AppColors.onPrimary),
                       ),
                       const SizedBox(width: 8),
                       const Expanded(
                         child: Text(
-                          'Smart Fill: Buat Otomatis dari 1 Kalimat Singkat',
-                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                          'Smart Fill: Otomatis dari 1 Kalimat Singkat',
+                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Ketik kalimat sederhana (misal: "mengikuti orientasi pemagangan nasional batch 3A angkatan 2 tahun 2026 dan mengikuti arahan menginstall Autocad"), sistem akan langsung merangkai Uraian Aktivitas dan Pembelajaran resmi.',
-                    style: TextStyle(
-                      fontSize: 11.5,
-                      height: 1.35,
-                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 8),
                   Row(
-                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
                       Expanded(
                         child: TextField(
@@ -432,12 +418,12 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                           maxLines: 2,
                           style: const TextStyle(fontSize: 12.5),
                           decoration: InputDecoration(
-                            hintText: 'Ketik aktivitas sederhana Anda di sini...',
+                            hintText: 'Ketik aktivitas singkat (misal: orientasi magang dan install autocad)...',
                             hintStyle: TextStyle(
                               fontSize: 11.5,
                               color: isDark ? AppColors.darkTextSecondary : AppColors.textTertiary,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             filled: true,
                             fillColor: isDark ? AppColors.darkSurface : Colors.white,
                             border: OutlineInputBorder(
@@ -479,7 +465,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                           backgroundColor: AppColors.primary,
                           foregroundColor: AppColors.onPrimary,
                           minimumSize: Size.zero,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),
                         child: const Column(
@@ -497,18 +483,17 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               ),
             ),
 
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
 
             // =========================================================
             // 1. URAIAN AKTIVITAS FIELD
             // =========================================================
             _buildFieldHeader(
               title: '1. Uraian Aktivitas Magang',
-              subtitle: 'Ketik uraian tugas teknis atau kegiatan Anda hari ini.',
               isRequired: true,
               isDark: isDark,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             TextFormField(
               controller: _activitiesController,
               maxLines: 4,
@@ -519,58 +504,25 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 return null;
               },
               decoration: const InputDecoration(
-                hintText: 'Ketik kegiatan, contoh: pengukuran bidang tanah GNSS RTK, digitasi peta AutoCAD, pemasangan patok tanda batas...',
+                hintText: 'Ketik kegiatan atau tugas yang Anda kerjakan hari ini...',
               ),
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _buildChip('Pengukuran Lapangan GNSS RTK', _activitiesController, isDark),
-                _buildChip('Pemasangan Patok Batas Bidang', _activitiesController, isDark),
-                _buildChip('Pengolahan Data Koordinat TM-3°', _activitiesController, isDark),
-                _buildChip('Digitasi Peta Bidang GeoKKP', _activitiesController, isDark),
-                _buildChip('Pembuatan Gambar Ukur (GU)', _activitiesController, isDark),
-                _buildChip('Pengecekan Warkah & Ploting PBT', _activitiesController, isDark),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _buildLiveExpansionBox(
-              title: 'Kalimat Formal Otomatis Sistem:',
-              expandedText: expandedActivities,
-              placeholder: 'Ketik beberapa kata di atas untuk melihat kalimat formal otomatis...',
-              isDark: isDark,
-              onApply: expandedActivities.trim().isNotEmpty && expandedActivities.trim() != _activitiesController.text.trim()
-                  ? () {
-                      setState(() => _activitiesController.text = expandedActivities);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✨ Uraian aktivitas diperbarui dengan kalimat formal!'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    }
-                  : null,
-            ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // =========================================================
             // 2. PEMBELAJARAN YANG DIPEROLEH FIELD
             // =========================================================
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: _buildFieldHeader(
                     title: '2. Pembelajaran yang Diperoleh',
-                    subtitle: 'Wawasan teknis, regulasi, atau keahlian baru yang didapat.',
                     isRequired: true,
                     isDark: isDark,
                   ),
                 ),
-                const SizedBox(width: 8),
                 TextButton.icon(
                   onPressed: () {
                     final actInput = _activitiesController.text.trim();
@@ -602,7 +554,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             TextFormField(
               controller: _learningsController,
               maxLines: 4,
@@ -613,57 +565,25 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 return null;
               },
               decoration: const InputDecoration(
-                hintText: 'Contoh: sistem proyeksi TM-3 BPN, metode GNSS RTK & Total Station, azas contradictoire delimitatie, alur integrasi GeoKKP...',
+                hintText: 'Ketik pemahaman, wawasan baru, atau kompetensi teknis yang didapat...',
               ),
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _buildChip('Sistem Proyeksi TM-3° BPN', _learningsController, isDark),
-                _buildChip('Metode GNSS RTK & Total Station', _learningsController, isDark),
-                _buildChip('Azas Contradictoire Delimitatie', _learningsController, isDark),
-                _buildChip('Standar Gambar Ukur & GeoKKP', _learningsController, isDark),
-                _buildChip('Regulasi Survei Kadastral ATR/BPN', _learningsController, isDark),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _buildLiveExpansionBox(
-              title: 'Kalimat Pembelajaran Formal Sistem:',
-              expandedText: expandedLearnings,
-              placeholder: 'Ketik poin pembelajaran di atas atau klik "Buat dari Aktivitas"...',
-              isDark: isDark,
-              onApply: expandedLearnings.trim().isNotEmpty && expandedLearnings.trim() != _learningsController.text.trim()
-                  ? () {
-                      setState(() => _learningsController.text = expandedLearnings);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✨ Pembelajaran diperbarui dengan kalimat formal!'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    }
-                  : null,
-            ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
             // =========================================================
             // 3. KENDALA YANG DIHADAPI FIELD
             // =========================================================
             Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
                   child: _buildFieldHeader(
                     title: '3. Kendala yang Dihadapi',
-                    subtitle: 'Kendala teknis di lapangan/kantor, atau pilih opsi lancar.',
                     isRequired: true,
                     isDark: isDark,
                   ),
                 ),
-                const SizedBox(width: 8),
                 TextButton.icon(
                   onPressed: () {
                     setState(() {
@@ -680,7 +600,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             TextFormField(
               controller: _obstaclesController,
               maxLines: 3,
@@ -691,38 +611,8 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 return null;
               },
               decoration: const InputDecoration(
-                hintText: 'Contoh: sinyal satelit GNSS terhalang vegetasi, cuaca hujan lapangan, atau klik "Tidak Ada Kendala"...',
+                hintText: 'Ketik kendala di lapangan/kantor, atau klik "Tidak Ada Kendala"...',
               ),
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                _buildChip('Tidak Ada Kendala', _obstaclesController, isDark),
-                _buildChip('Sinyal GNSS Terhalang Pohon', _obstaclesController, isDark),
-                _buildChip('Pemilik Batas Belum Hadir', _obstaclesController, isDark),
-                _buildChip('Kondisi Cuaca Hujan Lapangan', _obstaclesController, isDark),
-                _buildChip('Topografi Medan Perbukitan', _obstaclesController, isDark),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _buildLiveExpansionBox(
-              title: 'Kalimat Kendala Formal Sistem:',
-              expandedText: expandedObstacles,
-              placeholder: 'Ketik kendala di atas atau pilih "Tidak Ada Kendala"...',
-              isDark: isDark,
-              onApply: expandedObstacles.trim().isNotEmpty && expandedObstacles.trim() != _obstaclesController.text.trim()
-                  ? () {
-                      setState(() => _obstaclesController.text = expandedObstacles);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('✨ Kendala diperbarui dengan kalimat formal!'),
-                          backgroundColor: AppColors.success,
-                        ),
-                      );
-                    }
-                  : null,
             ),
 
             const SizedBox(height: 24),
@@ -947,15 +837,15 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   // --------------------------------------------------------------------------
   Widget _buildFieldHeader({
     required String title,
-    required String subtitle,
+    String? subtitle,
     bool isRequired = false,
     bool isDark = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        RichText(
-          text: TextSpan(
+        Text.rich(
+          TextSpan(
             text: title,
             style: TextStyle(
               fontSize: 14,
@@ -971,140 +861,14 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             ],
           ),
         ),
-        const SizedBox(height: 2),
-        Text(
-          subtitle,
-          style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildLiveExpansionBox({
-    required String title,
-    required String expandedText,
-    required String placeholder,
-    required bool isDark,
-    VoidCallback? onApply,
-  }) {
-    final hasContent = expandedText.trim().isNotEmpty;
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: hasContent ? const Color(0xFF86EFAC) : (isDark ? AppColors.darkBorder : AppColors.border),
-          width: 1.2,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(LucideIcons.sparkles, size: 15, color: AppColors.success),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.successDark),
-                ),
-              ),
-              if (onApply != null)
-                InkWell(
-                  onTap: onApply,
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: AppColors.success,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(LucideIcons.check, size: 12, color: Colors.white),
-                        SizedBox(width: 4),
-                        Text(
-                          'Terapkan Kalimat',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 6),
+        if (subtitle != null && subtitle.isNotEmpty) ...[
+          const SizedBox(height: 2),
           Text(
-            hasContent ? expandedText : placeholder,
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.4,
-              fontWeight: hasContent ? FontWeight.w600 : FontWeight.w400,
-              color: hasContent
-                  ? (isDark ? AppColors.darkTextPrimary : const Color(0xFF14532D))
-                  : (isDark ? AppColors.darkTextSecondary : AppColors.textTertiary),
-            ),
+            subtitle,
+            style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildChip(String text, TextEditingController controller, bool isDark) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          setState(() {
-            if (text == 'Tidak Ada Kendala') {
-              controller.text = SentenceExpander.defaultNoObstacle;
-            } else {
-              final current = controller.text.trim();
-              if (current.isEmpty) {
-                controller.text = text;
-              } else {
-                controller.text = '$current\n$text';
-              }
-            }
-          });
-        },
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-          decoration: BoxDecoration(
-            color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isDark ? AppColors.darkBorder : const Color(0xFFCBD5E1),
-              width: 1,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                LucideIcons.plus,
-                size: 12,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 4),
-              Text(
-                text,
-                style: TextStyle(
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+      ],
     );
   }
 }
