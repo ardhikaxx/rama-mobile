@@ -124,7 +124,7 @@ class DashboardScreen extends ConsumerWidget {
                     pendingTasks: data.pendingTasksThisWeek,
                     recordedWorkdays: data.totalWorkdaysRecorded,
                   ),
-                  const SizedBox(height: 95),
+                  const SizedBox(height: 24),
                 ],
               );
             },

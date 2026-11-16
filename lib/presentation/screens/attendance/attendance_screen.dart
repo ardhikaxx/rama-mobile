@@ -145,7 +145,7 @@ class AttendanceScreen extends ConsumerWidget {
                 ),
               ),
 
-              const SizedBox(height: 95),
+              const SizedBox(height: 24),
             ],
           ),
         ),
