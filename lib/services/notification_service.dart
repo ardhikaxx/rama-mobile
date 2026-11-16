@@ -12,6 +12,10 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
+  // Tactile double-pulse vibration: 0ms wait, 500ms vibrate, 250ms pause, 500ms vibrate
+  static final Int64List _vibrationPattern =
+      Int64List.fromList([0, 500, 250, 500]);
+
   // Stream for handling payload clicks
   final StreamController<String?> _payloadStreamController =
       StreamController<String?>.broadcast();
@@ -63,22 +67,66 @@ class NotificationService {
       },
     );
 
-    // 3. Create high-importance Android notification channel explicitly
+    // 3. Create high-importance Android notification channels explicitly
     final androidPlugin = _notificationsPlugin
         .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
     if (androidPlugin != null) {
-      const channel = AndroidNotificationChannel(
+      // Standard channel (sound + tactile vibration)
+      final standardChannel = AndroidNotificationChannel(
         AppConstants.notificationChannelId,
         AppConstants.notificationChannelName,
         description: AppConstants.notificationChannelDescription,
         importance: Importance.high,
         playSound: true,
         enableVibration: true,
+        vibrationPattern: _vibrationPattern,
       );
-      await androidPlugin.createNotificationChannel(channel);
+
+      // Silent channel for workplace/jam kerja (hanya getar tanpa suara)
+      final silentChannel = AndroidNotificationChannel(
+        AppConstants.notificationChannelSilentId,
+        AppConstants.notificationChannelSilentName,
+        description: AppConstants.notificationChannelSilentDescription,
+        importance: Importance.high,
+        playSound: false,
+        enableVibration: true,
+        vibrationPattern: _vibrationPattern,
+      );
+
+      await androidPlugin.createNotificationChannel(standardChannel);
+      await androidPlugin.createNotificationChannel(silentChannel);
     }
 
     _isInitialized = true;
+  }
+
+  AndroidNotificationDetails _buildAndroidDetails({
+    required bool sound,
+    required bool vibration,
+  }) {
+    final channelId = sound
+        ? AppConstants.notificationChannelId
+        : AppConstants.notificationChannelSilentId;
+    final channelName = sound
+        ? AppConstants.notificationChannelName
+        : AppConstants.notificationChannelSilentName;
+    final channelDesc = sound
+        ? AppConstants.notificationChannelDescription
+        : AppConstants.notificationChannelSilentDescription;
+
+    return AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription: channelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: sound,
+      enableVibration: vibration,
+      vibrationPattern: vibration ? _vibrationPattern : null,
+      category: AndroidNotificationCategory.reminder,
+      visibility: NotificationVisibility.public,
+      ticker: 'Pengingat RAMA',
+    );
   }
 
   Future<void> showInstantNotification({
@@ -89,19 +137,15 @@ class NotificationService {
     bool sound = true,
     bool vibration = true,
   }) async {
-    final androidDetails = AndroidNotificationDetails(
-      AppConstants.notificationChannelId,
-      AppConstants.notificationChannelName,
-      channelDescription: AppConstants.notificationChannelDescription,
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: sound,
-      enableVibration: vibration,
-    );
+    final androidDetails = _buildAndroidDetails(sound: sound, vibration: vibration);
 
     final details = NotificationDetails(
       android: androidDetails,
-      iOS: DarwinNotificationDetails(presentSound: sound),
+      iOS: DarwinNotificationDetails(
+        presentSound: sound,
+        presentAlert: true,
+        presentBadge: true,
+      ),
     );
 
     await _notificationsPlugin.show(
@@ -133,19 +177,15 @@ class NotificationService {
       final notificationId = baseId + day;
       final scheduledDate = _nextInstanceOfDayAndTime(day, schedule.hour, schedule.minute);
 
-      final androidDetails = AndroidNotificationDetails(
-        AppConstants.notificationChannelId,
-        AppConstants.notificationChannelName,
-        channelDescription: AppConstants.notificationChannelDescription,
-        importance: Importance.high,
-        priority: Priority.high,
-        playSound: sound,
-        enableVibration: vibration,
-      );
+      final androidDetails = _buildAndroidDetails(sound: sound, vibration: vibration);
 
       final details = NotificationDetails(
         android: androidDetails,
-        iOS: DarwinNotificationDetails(presentSound: sound),
+        iOS: DarwinNotificationDetails(
+          presentSound: sound,
+          presentAlert: true,
+          presentBadge: true,
+        ),
       );
 
       try {
@@ -199,19 +239,15 @@ class NotificationService {
       final notificationId = snoozeBaseId + i;
       final scheduledDate = now.add(Duration(minutes: intervalMinutes * i));
 
-      final androidDetails = AndroidNotificationDetails(
-        AppConstants.notificationChannelId,
-        AppConstants.notificationChannelName,
-        channelDescription: AppConstants.notificationChannelDescription,
-        importance: Importance.high,
-        priority: Priority.high,
-        playSound: sound,
-        enableVibration: vibration,
-      );
+      final androidDetails = _buildAndroidDetails(sound: sound, vibration: vibration);
 
       final details = NotificationDetails(
         android: androidDetails,
-        iOS: DarwinNotificationDetails(presentSound: sound),
+        iOS: DarwinNotificationDetails(
+          presentSound: sound,
+          presentAlert: true,
+          presentBadge: true,
+        ),
       );
 
       try {

@@ -125,7 +125,7 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Bunyikan Notifikasi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('Putar suara nada dering pengingat', style: TextStyle(fontSize: 12)),
+                    subtitle: const Text('Putar suara nada dering (dapat dimatikan saat jam kerja / rapat)', style: TextStyle(fontSize: 12)),
                     value: settings?.soundEnabled ?? true,
                     onChanged: (val) {
                       settingsNotifier.updateSoundAndVibration(
@@ -140,7 +140,7 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('Getaran Notifikasi', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
-                    subtitle: const Text('Getarkan perangkat saat alarm berdering', style: TextStyle(fontSize: 12)),
+                    subtitle: const Text('Pola getar taktil ganda agar terasa saat standby / di saku tanpa mengganggu suasana kerja', style: TextStyle(fontSize: 12)),
                     value: settings?.vibrationEnabled ?? true,
                     onChanged: (val) {
                       settingsNotifier.updateSoundAndVibration(

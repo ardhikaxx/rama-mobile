@@ -71,6 +71,11 @@ class AppConstants {
   static const String notificationChannelDescription =
       'Notifikasi pengingat absensi magang dan pengisian logbook harian';
 
+  static const String notificationChannelSilentId = 'rama_reminders_silent_channel';
+  static const String notificationChannelSilentName = 'Pengingat RAMA (Hanya Getar)';
+  static const String notificationChannelSilentDescription =
+      'Notifikasi pengingat getar tanpa suara untuk suasana kerja yang tenang';
+
   // Notification Action Payloads
   static const String payloadCheckIn = 'action:check_in';
   static const String payloadCheckOut = 'action:check_out';
