@@ -277,7 +277,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             label: const Text('Lanjut ke Pembelajaran (2/3)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onPrimary,
               minimumSize: const Size.fromHeight(48),
             ),
           ),
@@ -386,7 +386,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   label: const Text('Lanjut ke Kendala (3/3)', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onPrimary,
                     minimumSize: const Size.fromHeight(48),
                   ),
                 ),
@@ -634,7 +634,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   label: const Text('Mulai Buat Laporan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                    foregroundColor: AppColors.onPrimary,
                     minimumSize: const Size.fromHeight(48),
                   ),
                 ),
