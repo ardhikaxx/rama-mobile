@@ -24,7 +24,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   late final TextEditingController _activitiesController;
   late final TextEditingController _learningsController;
   late final TextEditingController _obstaclesController;
-  late final TextEditingController _quickPromptController;
 
   final _formKey = GlobalKey<FormState>();
 
@@ -35,7 +34,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     _activitiesController = TextEditingController(text: state.activities);
     _learningsController = TextEditingController(text: state.learnings);
     _obstaclesController = TextEditingController(text: state.obstacles);
-    _quickPromptController = TextEditingController();
 
     _activitiesController.addListener(_onTextChanged);
     _learningsController.addListener(_onTextChanged);
@@ -55,7 +53,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     _activitiesController.dispose();
     _learningsController.dispose();
     _obstaclesController.dispose();
-    _quickPromptController.dispose();
     super.dispose();
   }
 
@@ -95,7 +92,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               _activitiesController.clear();
               _learningsController.clear();
               _obstaclesController.clear();
-              _quickPromptController.clear();
               logbookNotifier.selectDate(DateTime.now());
               setState(() => _selectedTab = 0);
               ScaffoldMessenger.of(context).showSnackBar(
@@ -374,115 +370,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               ),
             ),
 
-            const SizedBox(height: 14),
-
-            // Smart Fill: Input Cepat 1 Kalimat (Simple & Ringkas)
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFFFFBEB),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: isDark ? 0.4 : 0.7),
-                  width: 1.2,
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(LucideIcons.sparkles, size: 14, color: AppColors.onPrimary),
-                      ),
-                      const SizedBox(width: 8),
-                      const Expanded(
-                        child: Text(
-                          'Smart Fill: Otomatis dari 1 Kalimat Singkat',
-                          style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _quickPromptController,
-                          maxLines: 2,
-                          style: const TextStyle(fontSize: 12.5),
-                          decoration: InputDecoration(
-                            hintText: 'Ketik aktivitas singkat (misal: orientasi magang dan install autocad)...',
-                            hintStyle: TextStyle(
-                              fontSize: 11.5,
-                              color: isDark ? AppColors.darkTextSecondary : AppColors.textTertiary,
-                            ),
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            filled: true,
-                            fillColor: isDark ? AppColors.darkSurface : Colors.white,
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(10),
-                              borderSide: BorderSide(
-                                color: isDark ? AppColors.darkBorder : AppColors.border,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          final input = _quickPromptController.text.trim();
-                          if (input.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Silakan masukkan kalimat kegiatan sederhana terlebih dahulu.'),
-                                backgroundColor: AppColors.warning,
-                              ),
-                            );
-                            return;
-                          }
-                          final draft = SentenceExpander.generateSmartLogbook(input);
-                          setState(() {
-                            _activitiesController.text = draft.activities;
-                            _learningsController.text = draft.learnings;
-                            _obstaclesController.text = draft.obstacles;
-                          });
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('✨ Berhasil membuat Uraian Aktivitas & Pembelajaran resmi!'),
-                              backgroundColor: AppColors.success,
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          foregroundColor: AppColors.onPrimary,
-                          minimumSize: Size.zero,
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                        ),
-                        child: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(LucideIcons.sparkles, size: 16),
-                            SizedBox(height: 2),
-                            Text('Generate', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-
             const SizedBox(height: 16),
 
             // =========================================================
@@ -490,6 +377,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             // =========================================================
             _buildFieldHeader(
               title: '1. Uraian Aktivitas Magang',
+              subtitle: 'Ketik aktivitas sederhana Anda, sistem akan mengubahnya jadi format resmi',
               isRequired: true,
               isDark: isDark,
             ),
@@ -504,7 +392,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 return null;
               },
               decoration: const InputDecoration(
-                hintText: 'Ketik kegiatan atau tugas yang Anda kerjakan hari ini...',
+                hintText: 'Contoh: mengikuti orientasi magang dan install autocad...',
               ),
             ),
 
@@ -519,7 +407,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 Expanded(
                   child: _buildFieldHeader(
                     title: '2. Pembelajaran yang Diperoleh',
-                    isRequired: true,
+                    subtitle: 'Otomatis disusun dari aktivitas jika dikosongkan',
                     isDark: isDark,
                   ),
                 ),
@@ -558,14 +446,8 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             TextFormField(
               controller: _learningsController,
               maxLines: 4,
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return 'Pembelajaran yang diperoleh tidak boleh kosong';
-                }
-                return null;
-              },
               decoration: const InputDecoration(
-                hintText: 'Ketik pemahaman, wawasan baru, atau kompetensi teknis yang didapat...',
+                hintText: 'Ketik pemahaman/kompetensi yang didapat (atau biarkan kosong untuk otomatis)...',
               ),
             ),
 
@@ -580,14 +462,14 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 Expanded(
                   child: _buildFieldHeader(
                     title: '3. Kendala yang Dihadapi',
-                    isRequired: true,
+                    subtitle: 'Opsional (otomatis standar kedinasan jika kosong)',
                     isDark: isDark,
                   ),
                 ),
                 TextButton.icon(
                   onPressed: () {
                     setState(() {
-                      _obstaclesController.text = SentenceExpander.defaultNoObstacle;
+                      _obstaclesController.text = SentenceExpander.getNextNoObstacleMessage();
                     });
                   },
                   icon: const Icon(LucideIcons.checkCircle2, size: 13, color: AppColors.success),
@@ -604,12 +486,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             TextFormField(
               controller: _obstaclesController,
               maxLines: 3,
-              validator: (v) {
-                if (v == null || v.trim().isEmpty) {
-                  return 'Kendala yang dihadapi tidak boleh kosong';
-                }
-                return null;
-              },
               decoration: const InputDecoration(
                 hintText: 'Ketik kendala di lapangan/kantor, atau klik "Tidak Ada Kendala"...',
               ),
@@ -644,7 +520,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
       if (!(_formKey.currentState?.validate() ?? false)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Silakan lengkapi kolom yang wajib diisi terlebih dahulu.'),
+            content: Text('Silakan lengkapi uraian aktivitas magang terlebih dahulu.'),
             backgroundColor: AppColors.warning,
           ),
         );
@@ -652,20 +528,34 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
       }
     }
 
+    final actInput = _activitiesController.text.trim();
+    String learnInput = _learningsController.text.trim();
+    if (learnInput.isEmpty && actInput.isNotEmpty) {
+      learnInput = SentenceExpander.expandLearnings('', actInput);
+    }
+
     final obsInput = _obstaclesController.text.trim().isEmpty
-        ? SentenceExpander.defaultNoObstacle
+        ? SentenceExpander.getNextNoObstacleMessage()
         : _obstaclesController.text;
+
+    final finalActivities = SentenceExpander.expandActivities(actInput);
+    final finalLearnings = SentenceExpander.expandLearnings(learnInput, actInput);
+    final finalObstacles = SentenceExpander.expandObstacles(obsInput);
+
+    _activitiesController.text = finalActivities;
+    _learningsController.text = finalLearnings;
+    _obstaclesController.text = finalObstacles;
 
     final notifier = ref.read(logbookProvider.notifier);
     notifier.updateFields(
-      activities: _activitiesController.text,
-      learnings: _learningsController.text,
-      obstacles: obsInput,
+      activities: finalActivities,
+      learnings: finalLearnings,
+      obstacles: finalObstacles,
     );
     notifier.buildReport(
-      activities: _activitiesController.text,
-      learnings: _learningsController.text,
-      obstacles: obsInput,
+      activities: finalActivities,
+      learnings: finalLearnings,
+      obstacles: finalObstacles,
     );
 
     setState(() => _selectedTab = 1);
