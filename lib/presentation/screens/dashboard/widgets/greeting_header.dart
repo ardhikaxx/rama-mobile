@@ -60,9 +60,10 @@ class GreetingHeader extends StatelessWidget {
                         Text(
                           AppConstants.appName,
                           style: TextStyle(
-                            fontSize: 20,
+                            fontFamily: AppConstants.appFontFamily,
+                            fontSize: 22,
                             fontWeight: FontWeight.w800,
-                            letterSpacing: 0.5,
+                            letterSpacing: 0.8,
                             color: isDark ? AppColors.darkTextPrimary : AppColors.primaryDark,
                           ),
                         ),

@@ -71,9 +71,10 @@ class _AboutScreenState extends State<AboutScreen> {
                   const Text(
                     AppConstants.appName,
                     style: TextStyle(
-                      fontSize: 26,
+                      fontFamily: AppConstants.appFontFamily,
+                      fontSize: 30,
                       fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                      letterSpacing: 0.8,
                     ),
                   ),
                   const SizedBox(height: 4),

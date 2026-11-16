@@ -3,6 +3,7 @@ class AppConstants {
   static const String appFullName = 'Rekap Aktivitas Magang & Absensi';
   static const String appTagline = 'Biar Magang Lebih Teratur';
   static const String appVersion = '1.0.0';
+  static const String appFontFamily = 'MatchaSquishy';
 
   // Database
   static const String databaseName = 'rama_database.db';

@@ -92,6 +92,11 @@ flutter:
   assets:
     - assets/images/
 
+  fonts:
+    - family: MatchaSquishy
+      fonts:
+        - asset: assets/fonts/Matcha-Squishy.otf
+
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 
