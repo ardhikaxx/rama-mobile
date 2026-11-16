@@ -697,9 +697,11 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             children: [
               const Icon(LucideIcons.sparkles, size: 16, color: AppColors.success),
               const SizedBox(width: 8),
-              Text(
-                title,
-                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.successDark),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.successDark),
+                ),
               ),
             ],
           ),
