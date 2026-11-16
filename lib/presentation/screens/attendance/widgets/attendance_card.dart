@@ -82,7 +82,7 @@ class AttendanceCard extends StatelessWidget {
                       ),
                       child: const Icon(
                         LucideIcons.calendarCheck,
-                        color: AppColors.primary,
+                        color: AppColors.accentAmber,
                         size: 22,
                       ),
                     ),
@@ -127,7 +127,7 @@ class AttendanceCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF8FAFC),
+              color: isDark ? AppColors.darkSurfaceElevated : AppColors.background,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isDark ? AppColors.darkBorder : AppColors.border,
@@ -202,6 +202,7 @@ class AttendanceCard extends StatelessWidget {
               label: Text('Konfirmasi $title'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
               ),
             )
           else
@@ -212,18 +213,18 @@ class AttendanceCard extends StatelessWidget {
                     height: 44,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.successLight,
+                      color: isDark ? const Color(0xFF064E3B).withValues(alpha: 0.45) : AppColors.successLight,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(LucideIcons.checkCircle2, color: AppColors.successDark, size: 18),
+                        Icon(LucideIcons.checkCircle2, color: isDark ? const Color(0xFF6EE7B7) : AppColors.successDark, size: 18),
                         const SizedBox(width: 6),
                         Text(
                           'Tercatat ($actualTime)',
-                          style: const TextStyle(
-                            color: AppColors.successDark,
+                          style: TextStyle(
+                            color: isDark ? const Color(0xFF6EE7B7) : AppColors.successDark,
                             fontWeight: FontWeight.w700,
                             fontSize: 13.5,
                           ),
