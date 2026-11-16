@@ -3,9 +3,7 @@ import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/date_formatter.dart';
-import '../../calendar/calendar_screen.dart';
 import '../../settings/settings_screen.dart';
-import '../../statistics/statistics_screen.dart';
 
 class GreetingHeader extends StatelessWidget {
   final String? greeting;
@@ -24,81 +22,72 @@ class GreetingHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateString = DateFormatter.formatIndonesianDate(currentDate);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Container(
-              padding: const EdgeInsets.all(9),
-              decoration: BoxDecoration(
-                color: AppColors.primary,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          AppConstants.appName,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                            color: isDark ? AppColors.darkTextPrimary : AppColors.primaryDark,
+                          ),
+                        ),
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            'Rekap Aktivitas Magang & Absensi',
+                            style: TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.1,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-              child: const Icon(
-                LucideIcons.checkCheck,
-                color: Colors.white,
-                size: 20,
-              ),
             ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppConstants.appName,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                    color: isDark ? AppColors.darkTextPrimary : AppColors.primaryDark,
-                  ),
-                ),
-                Text(
-                  dateString,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+            const SizedBox(width: 10),
 
-        // Top action buttons: Calendar, Statistics, Settings
-        Row(
-          children: [
-            _buildHeaderIconButton(
-              context,
-              icon: LucideIcons.calendar,
-              tooltip: 'Kalender Magang',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const CalendarScreen()),
-                );
-              },
-            ),
-            const SizedBox(width: 8),
-            _buildHeaderIconButton(
-              context,
-              icon: LucideIcons.barChart2,
-              tooltip: 'Statistik & Rekap',
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (_) => const StatisticsScreen()),
-                );
-              },
-            ),
-            const SizedBox(width: 8),
+            // Top action button: Settings
             _buildHeaderIconButton(
               context,
               icon: LucideIcons.settings,
@@ -110,6 +99,37 @@ class GreetingHeader extends StatelessWidget {
               },
             ),
           ],
+        ),
+        const SizedBox(height: 12),
+        // Date Pill
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurface : AppColors.primaryContainer,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.primary.withValues(alpha: 0.35),
+            ),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                LucideIcons.calendarDays,
+                size: 13.5,
+                color: isDark ? AppColors.primary : AppColors.accentAmber,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                dateString,
+                style: TextStyle(
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? AppColors.darkTextPrimary : AppColors.primaryDark,
+                ),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -132,7 +152,7 @@ class GreetingHeader extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.all(9),
+            padding: const EdgeInsets.all(7.5),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
@@ -142,7 +162,7 @@ class GreetingHeader extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              size: 19,
+              size: 18,
               color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
             ),
           ),
