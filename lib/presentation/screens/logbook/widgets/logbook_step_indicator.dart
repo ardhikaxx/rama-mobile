@@ -46,7 +46,7 @@ class LogbookStepIndicator extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isPassed
                       ? AppColors.primary
-                      : (isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0)),
+                      : (isDark ? AppColors.darkBorder : AppColors.divider),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -79,7 +79,7 @@ class LogbookStepIndicator extends StatelessWidget {
                           ? AppColors.success
                           : (isCurrent
                               ? AppColors.primary
-                              : (isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9))),
+                              : (isDark ? AppColors.darkSurfaceElevated : AppColors.divider)),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isCurrent
@@ -104,7 +104,7 @@ class LogbookStepIndicator extends StatelessWidget {
                               step['icon'] as IconData,
                               size: 16,
                               color: isCurrent
-                                  ? Colors.white
+                                  ? AppColors.onPrimary
                                   : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                             ),
                     ),
@@ -116,7 +116,7 @@ class LogbookStepIndicator extends StatelessWidget {
                       fontSize: 10.5,
                       fontWeight: isCurrent ? FontWeight.w700 : FontWeight.w500,
                       color: isCurrent
-                          ? AppColors.primary
+                          ? (isDark ? AppColors.primary : AppColors.primaryDark)
                           : (isCompleted
                               ? (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary)
                               : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary)),
