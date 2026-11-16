@@ -11,6 +11,7 @@ class StatisticsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final statFilter = ref.watch(statisticsFilterProvider);
     final statDataAsync = ref.watch(statisticsDataProvider);
 
@@ -73,6 +74,7 @@ class StatisticsScreen extends ConsumerWidget {
                           children: [
                             Expanded(
                               child: _buildProgressTile(
+                                isDark: isDark,
                                 label: 'Kehadiran',
                                 percentage: stats.attendanceRate,
                                 color: AppColors.success,
@@ -82,6 +84,7 @@ class StatisticsScreen extends ConsumerWidget {
                             const SizedBox(width: 14),
                             Expanded(
                               child: _buildProgressTile(
+                                isDark: isDark,
                                 label: 'Logbook Selesai',
                                 percentage: stats.logbookRate,
                                 color: AppColors.primary,
@@ -249,7 +252,7 @@ class StatisticsScreen extends ConsumerWidget {
                           title: 'Absen Pulang',
                           value: '${stats.totalCheckOut}',
                           icon: LucideIcons.logOut,
-                          color: AppColors.primaryDark,
+                          color: AppColors.accentAmber,
                         ),
                       ),
                     ],
@@ -294,13 +297,14 @@ class StatisticsScreen extends ConsumerWidget {
     required bool isSelected,
   }) {
     return ChoiceChip(
+      showCheckmark: false,
       label: Text(label),
       selected: isSelected,
       selectedColor: AppColors.primary,
       labelStyle: TextStyle(
         fontSize: 12.5,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        color: isSelected ? Colors.white : AppColors.textSecondary,
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        color: isSelected ? AppColors.onPrimary : AppColors.textSecondary,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -318,6 +322,7 @@ class StatisticsScreen extends ConsumerWidget {
   }
 
   Widget _buildProgressTile({
+    required bool isDark,
     required String label,
     required double percentage,
     required Color color,
@@ -346,7 +351,7 @@ class StatisticsScreen extends ConsumerWidget {
           child: LinearProgressIndicator(
             value: (percentage / 100).clamp(0.0, 1.0),
             minHeight: 8,
-            backgroundColor: const Color(0xFFE2E8F0),
+            backgroundColor: isDark ? AppColors.darkSurfaceElevated : AppColors.divider,
             valueColor: AlwaysStoppedAnimation<Color>(color),
           ),
         ),
