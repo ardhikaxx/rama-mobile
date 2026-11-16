@@ -62,7 +62,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         title: const Text('Riwayat Aktivitas'),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: AppColors.primary,
+          labelColor: isDark ? AppColors.primary : AppColors.primaryDark,
           unselectedLabelColor: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
           indicatorColor: AppColors.primary,
           indicatorWeight: 3,
