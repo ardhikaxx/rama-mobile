@@ -79,12 +79,12 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: isCheckIn ? AppColors.primaryContainer : const Color(0xFFE0E7FF),
+              color: isCheckIn ? AppColors.primaryContainer : (isDark ? AppColors.darkSurfaceElevated : AppColors.primaryContainer),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
               isCheckIn ? LucideIcons.logIn : LucideIcons.logOut,
-              color: isCheckIn ? AppColors.primary : AppColors.primaryDark,
+              color: isCheckIn ? AppColors.accentAmber : (isDark ? AppColors.primary : AppColors.primaryDark),
               size: 22,
             ),
           ),
@@ -196,10 +196,13 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: AppColors.onPrimary,
             minimumSize: const Size(110, 42),
           ),
-          child: Text(isEditing ? 'Simpan' : 'Konfirmasi'),
+          child: Text(
+            isEditing ? 'Simpan' : 'Konfirmasi',
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
         ),
       ],
     );
@@ -207,6 +210,7 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
 
   Widget _buildStatusChip(String value, String label, IconData icon) {
     final isSelected = _selectedStatus == value;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return ChoiceChip(
       showCheckmark: false,
@@ -216,7 +220,9 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
           Icon(
             icon,
             size: 15,
-            color: isSelected ? Colors.white : AppColors.textSecondary,
+            color: isSelected
+                ? AppColors.onPrimary
+                : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
           ),
           const SizedBox(width: 5),
           Text(label),
@@ -227,8 +233,10 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
       backgroundColor: Colors.transparent,
       labelStyle: TextStyle(
         fontSize: 12.5,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        color: isSelected ? Colors.white : AppColors.textSecondary,
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        color: isSelected
+            ? AppColors.onPrimary
+            : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
