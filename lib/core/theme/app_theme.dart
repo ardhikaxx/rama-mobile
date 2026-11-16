@@ -11,19 +11,20 @@ class AppTheme {
       brightness: Brightness.light,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.background,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
+      colorScheme: const ColorScheme(
+        brightness: Brightness.light,
         primary: AppColors.primary,
-        onPrimary: Colors.white,
+        onPrimary: AppColors.onPrimary,
         primaryContainer: AppColors.primaryContainer,
         onPrimaryContainer: AppColors.primaryDark,
         secondary: AppColors.primaryDark,
         onSecondary: Colors.white,
+        secondaryContainer: AppColors.primaryContainer,
+        onSecondaryContainer: AppColors.primaryDark,
         surface: AppColors.surface,
         onSurface: AppColors.textPrimary,
         error: AppColors.danger,
         onError: Colors.white,
-        brightness: Brightness.light,
       ),
       textTheme: textTheme.copyWith(
         displayLarge: textTheme.displayLarge?.copyWith(
@@ -87,28 +88,28 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 15,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.primary,
+          foregroundColor: AppColors.textPrimary,
           minimumSize: const Size.fromHeight(48),
-          side: const BorderSide(color: AppColors.primary, width: 1.5),
+          side: const BorderSide(color: AppColors.primary, width: 1.8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 15,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -126,7 +127,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.8),
+          borderSide: const BorderSide(color: AppColors.primaryDark, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -143,7 +144,7 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        selectedItemColor: AppColors.primary,
+        selectedItemColor: AppColors.primaryDark,
         unselectedItemColor: AppColors.textSecondary,
         elevation: 8,
         type: BottomNavigationBarType.fixed,
@@ -164,19 +165,20 @@ class AppTheme {
       brightness: Brightness.dark,
       primaryColor: AppColors.primary,
       scaffoldBackgroundColor: AppColors.darkBackground,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.primary,
+      colorScheme: const ColorScheme(
+        brightness: Brightness.dark,
         primary: AppColors.primary,
-        onPrimary: Colors.white,
-        primaryContainer: const Color(0xFF1E3A8A),
-        onPrimaryContainer: Colors.white,
-        secondary: const Color(0xFF60A5FA),
-        onSecondary: AppColors.darkBackground,
+        onPrimary: AppColors.onPrimary,
+        primaryContainer: AppColors.darkPrimaryContainer,
+        onPrimaryContainer: AppColors.primary,
+        secondary: AppColors.primary,
+        onSecondary: AppColors.onPrimary,
+        secondaryContainer: AppColors.darkSurfaceElevated,
+        onSecondaryContainer: AppColors.darkTextPrimary,
         surface: AppColors.darkSurface,
         onSurface: AppColors.darkTextPrimary,
         error: AppColors.danger,
         onError: Colors.white,
-        brightness: Brightness.dark,
       ),
       textTheme: textTheme.copyWith(
         displayLarge: textTheme.displayLarge?.copyWith(
@@ -240,28 +242,28 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           elevation: 0,
           backgroundColor: AppColors.primary,
-          foregroundColor: Colors.white,
+          foregroundColor: AppColors.onPrimary,
           minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 15,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: const Color(0xFF60A5FA),
+          foregroundColor: AppColors.primary,
           minimumSize: const Size.fromHeight(48),
-          side: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
+          side: const BorderSide(color: AppColors.primary, width: 1.8),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
           ),
           textStyle: GoogleFonts.plusJakartaSans(
             fontSize: 15,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -279,7 +281,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.primary, width: 1.8),
+          borderSide: const BorderSide(color: AppColors.primary, width: 2.0),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -288,7 +290,7 @@ class AppTheme {
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: AppColors.darkSurface,
-        selectedItemColor: Color(0xFF60A5FA),
+        selectedItemColor: AppColors.primary,
         unselectedItemColor: AppColors.darkTextSecondary,
         elevation: 8,
         type: BottomNavigationBarType.fixed,
