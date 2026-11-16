@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
@@ -652,13 +653,23 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     LogbookState state,
     LogbookNotifier notifier,
   ) {
+    final activitiesText = state.activities.isNotEmpty
+        ? state.activities
+        : SentenceExpander.expandActivities(_activitiesController.text);
+    final learningsText = state.learnings.isNotEmpty
+        ? state.learnings
+        : SentenceExpander.expandLearnings(_learningsController.text);
+    final obstaclesText = state.obstacles.isNotEmpty
+        ? state.obstacles
+        : SentenceExpander.expandObstacles(_obstaclesController.text);
+
     final previewText = state.generatedPreview.isNotEmpty
         ? state.generatedPreview
         : LogbookEntry.generateTemplateText(
             date: state.selectedDate,
-            activities: SentenceExpander.expandActivities(_activitiesController.text),
-            learnings: SentenceExpander.expandLearnings(_learningsController.text),
-            obstacles: SentenceExpander.expandObstacles(_obstaclesController.text),
+            activities: activitiesText,
+            learnings: learningsText,
+            obstacles: obstaclesText,
           );
 
     return SingleChildScrollView(
@@ -667,27 +678,63 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Langkah 4: Laporan Magang Siap Pakai',
+            'Langkah 4: Pratinjau & Salin Laporan Magang',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 4),
           const Text(
-            'Laporan resmi Anda telah berhasil disusun secara otomatis dengan kalimat formal berstandar industri. Anda dapat langsung menyalinnya ke portal atau menyimpannya.',
+            'Setiap bagian telah disusun menjadi kalimat formal terpisah. Anda dapat menyalin masing-masing bagian untuk kolom portal yang sesuai, atau menyalin format lengkap sekaligus.',
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
           ),
 
           const SizedBox(height: 14),
 
-          // Preview Card
+          // Separate Section Preview & Copy Cards
           LogbookPreviewCard(
+            activities: activitiesText,
+            learnings: learningsText,
+            obstacles: obstaclesText,
             reportText: previewText,
             savedEntry: state.currentEntry,
-            onCopy: () async {
+            onCopyActivities: () async {
+              await Clipboard.setData(ClipboardData(text: activitiesText));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Uraian Aktivitas berhasil disalin ke clipboard!'),
+                    backgroundColor: AppColors.primary,
+                  ),
+                );
+              }
+            },
+            onCopyLearnings: () async {
+              await Clipboard.setData(ClipboardData(text: learningsText));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Pembelajaran yang Diperoleh berhasil disalin ke clipboard!'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              }
+            },
+            onCopyObstacles: () async {
+              await Clipboard.setData(ClipboardData(text: obstaclesText));
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Kendala yang Dihadapi berhasil disalin ke clipboard!'),
+                    backgroundColor: Color(0xFFD97706),
+                  ),
+                );
+              }
+            },
+            onCopyAll: () async {
               await notifier.copyReportToClipboard();
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('Laporan berhasil disalin ke clipboard! Siap ditempel ke portal.'),
+                    content: Text('Seluruh format logbook lengkap berhasil disalin ke clipboard!'),
                     backgroundColor: AppColors.primary,
                   ),
                 );
@@ -736,18 +783,6 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 }
               }
             },
-          ),
-
-          const SizedBox(height: 14),
-
-          // Edit Navigation Button
-          OutlinedButton.icon(
-            onPressed: () => _goToStep(0),
-            icon: const Icon(LucideIcons.edit2, size: 16),
-            label: const Text('Edit / Ubah Kata Kunci'),
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(44),
-            ),
           ),
           const SizedBox(height: 16),
         ],
