@@ -191,10 +191,10 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
+              foregroundColor: AppColors.onPrimary,
               minimumSize: const Size.fromHeight(48),
             ),
-            child: const Text('Terapkan Filter'),
+            child: const Text('Terapkan Filter', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
       ),
@@ -229,13 +229,14 @@ class _HistoryFilterBottomSheetState extends State<HistoryFilterBottomSheet> {
     Function(bool) onSelected,
   ) {
     return ChoiceChip(
+      showCheckmark: false,
       label: Text(label),
       selected: isSelected,
       selectedColor: AppColors.primary,
       labelStyle: TextStyle(
         fontSize: 12,
-        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-        color: isSelected ? Colors.white : AppColors.textSecondary,
+        fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+        color: isSelected ? AppColors.onPrimary : AppColors.textSecondary,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
