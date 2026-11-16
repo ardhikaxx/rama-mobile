@@ -160,7 +160,7 @@ class LogbookPreviewCard extends StatelessWidget {
                       label: Text(isSaved ? 'Perbarui' : 'Simpan', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isSaved ? AppColors.success : AppColors.primary,
-                        foregroundColor: Colors.white,
+                        foregroundColor: isSaved ? Colors.white : AppColors.onPrimary,
                         minimumSize: const Size.fromHeight(44),
                       ),
                     ),
@@ -302,7 +302,7 @@ class LogbookPreviewCard extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: color,
-                  foregroundColor: Colors.white,
+                  foregroundColor: color == AppColors.primary ? AppColors.onPrimary : Colors.white,
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   minimumSize: const Size(0, 34),
                   shape: RoundedRectangleBorder(
