@@ -39,23 +39,23 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 // Info Card
                 AppCard(
                   padding: const EdgeInsets.all(16),
-                  color: isDark ? AppColors.darkSurface : const Color(0xFFEFF6FF),
-                  border: const BorderSide(color: Color(0xFFBFDBFE)),
+                  color: isDark ? AppColors.darkSurface : AppColors.primaryContainer,
+                  border: BorderSide(color: isDark ? AppColors.darkBorder : AppColors.primary.withValues(alpha: 0.35)),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(LucideIcons.shieldCheck, color: AppColors.primary, size: 22),
+                      const Icon(LucideIcons.shieldCheck, color: AppColors.accentAmber, size: 22),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Penyimpanan 100% Lokal',
                               style: TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: AppColors.primaryDark,
+                                color: isDark ? AppColors.darkTextPrimary : AppColors.primaryDark,
                               ),
                             ),
                             const SizedBox(height: 4),
