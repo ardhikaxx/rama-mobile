@@ -2,6 +2,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../providers/statistics_provider.dart';
 import '../../widgets/app_card.dart';
@@ -25,7 +26,10 @@ class StatisticsScreen extends ConsumerWidget {
             ref.invalidate(statisticsDataProvider);
           },
           child: statDataAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Skeletonizer(
+              enabled: true,
+              child: _StatisticsSkeletonView(),
+            ),
             error: (err, _) => Center(child: Text('Gagal memuat statistik: $err')),
             data: (stats) {
               return ListView(
@@ -415,6 +419,44 @@ class StatisticsScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _StatisticsSkeletonView extends StatelessWidget {
+  const _StatisticsSkeletonView();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      children: [
+        Row(
+          children: [
+            Container(width: 80, height: 32, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(20))),
+            const SizedBox(width: 8),
+            Container(width: 80, height: 32, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(20))),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Container(
+          height: 140,
+          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(18)),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          height: 180,
+          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(18)),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(child: Container(height: 70, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(14)))),
+            const SizedBox(width: 10),
+            Expanded(child: Container(height: 70, decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(14)))),
+          ],
+        ),
+      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/app_snackbar.dart';
 import '../../../providers/app_providers.dart';
@@ -32,9 +33,11 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
         title: const Text('Cadangan & Ekspor Data'),
       ),
       body: SafeArea(
-        child: Stack(
-          children: [
-            ListView(
+        child: IgnorePointer(
+          ignoring: _isLoading,
+          child: Skeletonizer(
+            enabled: _isLoading,
+            child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               children: [
                 // Info Card
@@ -228,14 +231,7 @@ class _BackupRestoreScreenState extends ConsumerState<BackupRestoreScreen> {
                 const SizedBox(height: 24),
               ],
             ),
-            if (_isLoading)
-              Container(
-                color: Colors.black38,
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );

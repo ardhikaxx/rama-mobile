@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/app_snackbar.dart';
@@ -43,10 +44,13 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final schedules = ref.watch(reminderScheduleProvider).valueOrNull ?? [];
+    final reminderAsync = ref.watch(reminderScheduleProvider);
+    final schedules = reminderAsync.valueOrNull ?? [];
     final reminderNotifier = ref.read(reminderScheduleProvider.notifier);
-    final settings = ref.watch(settingsProvider).valueOrNull;
+    final settingsAsync = ref.watch(settingsProvider);
+    final settings = settingsAsync.valueOrNull;
     final settingsNotifier = ref.read(settingsProvider.notifier);
+    final isLoading = reminderAsync.isLoading || settingsAsync.isLoading;
 
     ReminderSchedule? attendanceSchedule;
     ReminderSchedule? logbookSchedule;
@@ -63,9 +67,11 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
         title: const Text('Pengaturan Pengingat'),
       ),
       body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          children: [
+        child: Skeletonizer(
+          enabled: isLoading,
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            children: [
             // Permission Notice Card if not granted
             if (!_isNotifGranted || !_isExactAlarmGranted) ...[
               _buildPermissionWarningCard(isDark),
@@ -279,7 +285,8 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildPermissionWarningCard(bool isDark) {

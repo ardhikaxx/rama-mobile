@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/app_snackbar.dart';
@@ -49,7 +50,9 @@ class AttendanceScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: RefreshIndicator(
+        child: Skeletonizer(
+          enabled: attendanceState.isLoading,
+          child: RefreshIndicator(
           onRefresh: () async {
             await ref.read(attendanceProvider.notifier).loadTodayAttendance();
           },
@@ -148,6 +151,7 @@ class AttendanceScreen extends ConsumerWidget {
               const SizedBox(height: 24),
             ],
           ),
+        ),
         ),
       ),
     );

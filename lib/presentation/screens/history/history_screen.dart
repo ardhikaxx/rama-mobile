@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/app_snackbar.dart';
 import '../../../core/utils/date_formatter.dart';
@@ -189,7 +190,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         ref.invalidate(attendanceHistoryListProvider);
       },
       child: attendanceAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Skeletonizer(
+          enabled: true,
+          child: _HistoryListSkeletonView(),
+        ),
         error: (err, _) => Center(child: Text('Gagal memuat: $err')),
         data: (records) {
           if (records.isEmpty) {
@@ -225,7 +229,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         ref.invalidate(logbookHistoryListProvider);
       },
       child: logbookAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Skeletonizer(
+          enabled: true,
+          child: _HistoryListSkeletonView(),
+        ),
         error: (err, _) => Center(child: Text('Gagal memuat: $err')),
         data: (entries) {
           if (entries.isEmpty) {
@@ -275,7 +282,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         ref.invalidate(allActivityHistoryListProvider);
       },
       child: historyAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const Skeletonizer(
+          enabled: true,
+          child: _HistoryListSkeletonView(),
+        ),
         error: (err, _) => Center(child: Text('Gagal memuat: $err')),
         data: (activities) {
           if (activities.isEmpty) {
@@ -489,5 +499,46 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen>
         );
       }
     }
+  }
+}
+
+class _HistoryListSkeletonView extends StatelessWidget {
+  const _HistoryListSkeletonView();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      itemCount: 5,
+      itemBuilder: (ctx, i) => Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: AppCard(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(width: 140, height: 16, color: Colors.grey.shade300),
+                    const SizedBox(height: 6),
+                    Container(width: 200, height: 12, color: Colors.grey.shade300),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

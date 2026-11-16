@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/app_snackbar.dart';
 import '../../../core/utils/date_formatter.dart';
@@ -104,25 +105,28 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Top Mode Switcher (Form Pengisian vs Hasil Pratinjau)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-              child: _buildTopTabBar(isDark, logbookState),
-            ),
-
-            // Tab Content
-            Expanded(
-              child: IndexedStack(
-                index: _selectedTab,
-                children: [
-                  _buildFormView(context, isDark, logbookState, logbookNotifier),
-                  _buildPreviewView(context, isDark, logbookState, logbookNotifier),
-                ],
+        child: Skeletonizer(
+          enabled: logbookState.isLoading,
+          child: Column(
+            children: [
+              // Top Mode Switcher (Form Pengisian vs Hasil Pratinjau)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+                child: _buildTopTabBar(isDark, logbookState),
               ),
-            ),
-          ],
+
+              // Tab Content
+              Expanded(
+                child: IndexedStack(
+                  index: _selectedTab,
+                  children: [
+                    _buildFormView(context, isDark, logbookState, logbookNotifier),
+                    _buildPreviewView(context, isDark, logbookState, logbookNotifier),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

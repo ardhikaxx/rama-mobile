@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/date_formatter.dart';
@@ -24,7 +25,10 @@ class SettingsScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: settingsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Skeletonizer(
+            enabled: true,
+            child: _SettingsSkeletonView(),
+          ),
           error: (err, _) => Center(child: Text('Gagal memuat: $err')),
           data: (settings) {
             return ListView(
@@ -334,5 +338,81 @@ class SettingsScreen extends ConsumerWidget {
       updated.sort();
     }
     ref.read(settingsProvider.notifier).updateActiveDays(updated);
+  }
+}
+
+class _SettingsSkeletonView extends StatelessWidget {
+  const _SettingsSkeletonView();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      children: [
+        const Text(
+          'Jadwal & Hari Kerja',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      Icon(LucideIcons.clock3, size: 18),
+                      SizedBox(width: 10),
+                      Text('Jam Kerja Harian'),
+                    ],
+                  ),
+                  Text('08.00 - 16.30 WIB'),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Divider(),
+              const SizedBox(height: 10),
+              Row(
+                children: List.generate(
+                  5,
+                  (i) => Expanded(
+                    child: Container(
+                      height: 38,
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          'Notifikasi & Pengingat',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          child: Container(height: 48),
+        ),
+        const SizedBox(height: 20),
+        const Text(
+          'Preferensi Lainnya',
+          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 10),
+        AppCard(
+          padding: const EdgeInsets.all(16),
+          child: Container(height: 48),
+        ),
+      ],
+    );
   }
 }

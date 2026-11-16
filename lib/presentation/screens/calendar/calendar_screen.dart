@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:table_calendar/table_calendar.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_formatter.dart';
@@ -32,7 +33,9 @@ class CalendarScreen extends ConsumerWidget {
         ],
       ),
       body: SafeArea(
-        child: RefreshIndicator(
+        child: Skeletonizer(
+          enabled: calendarState.isLoading,
+          child: RefreshIndicator(
           onRefresh: () async {
             await calendarNotifier.loadMonthData(calendarState.focusedDay);
           },
@@ -150,6 +153,7 @@ class CalendarScreen extends ConsumerWidget {
               const SizedBox(height: 24),
             ],
           ),
+        ),
         ),
       ),
     );

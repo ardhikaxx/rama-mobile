@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/utils/app_snackbar.dart';
 import '../../../../providers/attendance_provider.dart';
@@ -37,7 +38,10 @@ class DashboardScreen extends ConsumerWidget {
             await ref.read(logbookProvider.notifier).loadLogbookForDate(DateTime.now());
           },
           child: dashboardAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => const Skeletonizer(
+              enabled: true,
+              child: _DashboardSkeletonView(),
+            ),
             error: (err, stack) => Center(
               child: Padding(
                 padding: const EdgeInsets.all(24),
@@ -174,6 +178,75 @@ class DashboardScreen extends ConsumerWidget {
           }
         }
       },
+    );
+  }
+}
+
+class _DashboardSkeletonView extends StatelessWidget {
+  const _DashboardSkeletonView();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(width: 100, height: 22, color: Colors.grey.shade300),
+                  const SizedBox(height: 6),
+                  Container(width: 180, height: 14, color: Colors.grey.shade300),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 18),
+        Container(
+          height: 110,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Container(
+          height: 72,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Container(
+          height: 80,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        const SizedBox(height: 18),
+        Container(
+          height: 130,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 }
