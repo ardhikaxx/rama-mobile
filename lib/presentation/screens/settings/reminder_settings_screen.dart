@@ -7,6 +7,7 @@ import '../../../core/utils/date_formatter.dart';
 import '../../../data/models/reminder_schedule.dart';
 import '../../../providers/reminder_provider.dart';
 import '../../../providers/settings_provider.dart';
+import '../../../services/notification_service.dart';
 import '../../../services/permission_service.dart';
 import '../../widgets/app_card.dart';
 
@@ -182,6 +183,53 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
                         ),
                       ],
                     ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Uji Coba Notifikasi Native Card
+            AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(LucideIcons.bellRing, size: 18, color: AppColors.primary),
+                      SizedBox(width: 8),
+                      Text(
+                        'Uji Coba Notifikasi Native',
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Kirimkan notifikasi langsung ke bilah status HP Anda untuk memastikan sistem pengingat berfungsi dengan baik.',
+                    style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.35),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _testNotification(isAttendance: true),
+                          icon: const Icon(LucideIcons.calendarCheck, size: 16),
+                          label: const Text('Tes Absensi', style: TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => _testNotification(isAttendance: false),
+                          icon: const Icon(LucideIcons.bookOpen, size: 16),
+                          label: const Text('Tes Logbook', style: TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -459,5 +507,58 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
       days.sort();
     }
     await ref.read(reminderScheduleProvider.notifier).updateActiveDays(schedule.type, days);
+  }
+
+  Future<void> _testNotification({required bool isAttendance}) async {
+    final granted = await PermissionService.requestNotificationPermission();
+    if (!granted) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Izin notifikasi belum aktif. Silakan izinkan notifikasi terlebih dahulu.'),
+            backgroundColor: AppColors.danger,
+          ),
+        );
+      }
+      return;
+    }
+
+    final notifService = NotificationService.instance;
+    final settings = ref.read(settingsProvider).valueOrNull;
+    final sound = settings?.soundEnabled ?? true;
+    final vibration = settings?.vibrationEnabled ?? true;
+
+    if (isAttendance) {
+      await notifService.showInstantNotification(
+        id: 991,
+        title: '⏰ Pengingat Absensi Magang',
+        body: 'Waktunya absensi sore sebelum pulang! Catat kehadiran magang hari ini.',
+        payload: AppConstants.payloadCheckOut,
+        sound: sound,
+        vibration: vibration,
+      );
+    } else {
+      await notifService.showInstantNotification(
+        id: 992,
+        title: '📝 Pengingat Logbook Harian',
+        body: 'Jangan lupa rekap aktivitas dan pembelajaran magang Anda hari ini.',
+        payload: AppConstants.payloadLogbook,
+        sound: sound,
+        vibration: vibration,
+      );
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isAttendance
+                ? 'Notifikasi native Absensi telah dikirim ke bilah status!'
+                : 'Notifikasi native Logbook telah dikirim ke bilah status!',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
   }
 }

@@ -63,6 +63,21 @@ class NotificationService {
       },
     );
 
+    // 3. Create high-importance Android notification channel explicitly
+    final androidPlugin = _notificationsPlugin
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
+    if (androidPlugin != null) {
+      const channel = AndroidNotificationChannel(
+        AppConstants.notificationChannelId,
+        AppConstants.notificationChannelName,
+        description: AppConstants.notificationChannelDescription,
+        importance: Importance.high,
+        playSound: true,
+        enableVibration: true,
+      );
+      await androidPlugin.createNotificationChannel(channel);
+    }
+
     _isInitialized = true;
   }
 
