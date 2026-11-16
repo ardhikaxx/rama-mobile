@@ -33,6 +33,7 @@ class AppColors {
   static const Color textPrimary = Color(0xFF212121); // Charcoal Black
   static const Color textSecondary = Color(0xFF6B6A66); // Warm Neutral Gray
   static const Color textTertiary = Color(0xFFA3A29D); // Muted Stone Gray
+  static const Color textPlaceholder = Color(0xFFB8B7B2); // Faded soft placeholder for light mode
   static const Color border = Color(0xFFEBE6DC); // Warm Soft Border
   static const Color divider = Color(0xFFF3EFE6);
 
@@ -42,6 +43,7 @@ class AppColors {
   static const Color darkSurfaceElevated = Color(0xFF333333); // Mascot Dark Outline Tone (#333333)
   static const Color darkTextPrimary = Color(0xFFFAFAFA); // Crisp Mascot Body White
   static const Color darkTextSecondary = Color(0xFFA1A1AA); // Neutral Muted Gray
+  static const Color darkTextPlaceholder = Color(0xFF6B6B74); // Faded soft placeholder for dark mode
   static const Color darkBorder = Color(0xFF38383D); // Subtle Dark Border
 
   // Card & Badge Gradients

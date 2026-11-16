@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_constants.dart';
 
 class AppTheme {
   static ThemeData get lightTheme {
@@ -63,16 +64,18 @@ class AppTheme {
           fontSize: 12,
         ),
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.background,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: AppColors.textPrimary),
-        titleTextStyle: GoogleFonts.plusJakartaSans(
+        iconTheme: IconThemeData(color: AppColors.textPrimary),
+        titleTextStyle: TextStyle(
+          fontFamily: AppConstants.appFontFamily,
           color: AppColors.textPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
         ),
       ),
       cardTheme: CardThemeData(
@@ -134,8 +137,9 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.danger, width: 1.2),
         ),
         hintStyle: GoogleFonts.plusJakartaSans(
-          color: AppColors.textTertiary,
-          fontSize: 14,
+          color: AppColors.textPlaceholder,
+          fontSize: 13.5,
+          fontWeight: FontWeight.w400,
         ),
         labelStyle: GoogleFonts.plusJakartaSans(
           color: AppColors.textSecondary,
@@ -217,16 +221,18 @@ class AppTheme {
           fontSize: 12,
         ),
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: AppColors.darkBackground,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        iconTheme: const IconThemeData(color: AppColors.darkTextPrimary),
-        titleTextStyle: GoogleFonts.plusJakartaSans(
+        iconTheme: IconThemeData(color: AppColors.darkTextPrimary),
+        titleTextStyle: TextStyle(
+          fontFamily: AppConstants.appFontFamily,
           color: AppColors.darkTextPrimary,
-          fontSize: 20,
-          fontWeight: FontWeight.w700,
+          fontSize: 22,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
         ),
       ),
       cardTheme: CardThemeData(
@@ -286,6 +292,11 @@ class AppTheme {
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.danger, width: 1.2),
+        ),
+        hintStyle: GoogleFonts.plusJakartaSans(
+          color: AppColors.darkTextPlaceholder,
+          fontSize: 13.5,
+          fontWeight: FontWeight.w400,
         ),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(

@@ -273,9 +273,19 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     LogbookNotifier notifier,
   ) {
     final isSaved = state.currentEntry != null;
+    final placeholderStyle = TextStyle(
+      color: isDark ? AppColors.darkTextPlaceholder : AppColors.textPlaceholder,
+      fontSize: 13.5,
+      fontWeight: FontWeight.w400,
+    );
+    final inputTextStyle = TextStyle(
+      color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+      fontSize: 14.5,
+      fontWeight: FontWeight.w500,
+    );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Form(
         key: _formKey,
         child: Column(
@@ -384,14 +394,16 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             TextFormField(
               controller: _activitiesController,
               maxLines: 4,
+              style: inputTextStyle,
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
                   return 'Uraian aktivitas magang tidak boleh kosong';
                 }
                 return null;
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Contoh: mengikuti orientasi magang dan install autocad...',
+                hintStyle: placeholderStyle,
               ),
             ),
 
@@ -441,8 +453,10 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             TextFormField(
               controller: _learningsController,
               maxLines: 4,
-              decoration: const InputDecoration(
+              style: inputTextStyle,
+              decoration: InputDecoration(
                 hintText: 'Ketik pemahaman/kompetensi yang didapat (atau biarkan kosong untuk otomatis)...',
+                hintStyle: placeholderStyle,
               ),
             ),
 
@@ -482,14 +496,16 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             TextFormField(
               controller: _obstaclesController,
               maxLines: 3,
+              style: inputTextStyle,
               validator: (v) {
                 if (v == null || v.trim().isEmpty) {
                   return 'Silakan ketik kendala yang dihadapi atau klik tombol "Tidak Ada Kendala"';
                 }
                 return null;
               },
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Ketik kendala di lapangan/kantor, atau klik tombol "Tidak Ada Kendala" di atas...',
+                hintStyle: placeholderStyle,
               ),
             ),
 
@@ -588,7 +604,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
           );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
