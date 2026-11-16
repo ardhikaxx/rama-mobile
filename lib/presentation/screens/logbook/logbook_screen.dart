@@ -25,6 +25,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
   late final TextEditingController _activitiesController;
   late final TextEditingController _learningsController;
   late final TextEditingController _obstaclesController;
+  late final TextEditingController _quickPromptController;
 
   @override
   void initState() {
@@ -33,6 +34,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     _activitiesController = TextEditingController(text: state.activities);
     _learningsController = TextEditingController(text: state.learnings);
     _obstaclesController = TextEditingController(text: state.obstacles);
+    _quickPromptController = TextEditingController();
 
     _activitiesController.addListener(_onTextChanged);
     _learningsController.addListener(_onTextChanged);
@@ -52,6 +54,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     _activitiesController.dispose();
     _learningsController.dispose();
     _obstaclesController.dispose();
+    _quickPromptController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -209,6 +212,124 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
 
           const SizedBox(height: 16),
 
+          // Smart Fill: AI Auto-Generate Card
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFFFFBEB),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: isDark ? 0.4 : 0.7),
+                width: 1.2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: const Icon(LucideIcons.sparkles, size: 15, color: AppColors.onPrimary),
+                    ),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'Smart Fill: Buat Otomatis dari 1 Kalimat Singkat',
+                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Ketik kalimat sederhana (misal: "mengikuti orientasi pemagangan nasional batch 3A angkatan 2 tahun 2026 dan mengikuti arahan menginstall Autocad"), sistem akan langsung merangkai Uraian Aktivitas dan Pembelajaran resmi.',
+                  style: TextStyle(
+                    fontSize: 11.5,
+                    height: 1.35,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _quickPromptController,
+                        maxLines: 2,
+                        style: const TextStyle(fontSize: 12.5),
+                        decoration: InputDecoration(
+                          hintText: 'Ketik aktivitas sederhana Anda di sini...',
+                          hintStyle: TextStyle(
+                            fontSize: 11.5,
+                            color: isDark ? AppColors.darkTextSecondary : AppColors.textTertiary,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          filled: true,
+                          fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: isDark ? AppColors.darkBorder : AppColors.border,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton(
+                      onPressed: () {
+                        final input = _quickPromptController.text.trim();
+                        if (input.isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Silakan masukkan kalimat kegiatan sederhana terlebih dahulu.'),
+                              backgroundColor: AppColors.warning,
+                            ),
+                          );
+                          return;
+                        }
+                        final draft = SentenceExpander.generateSmartLogbook(input);
+                        setState(() {
+                          _activitiesController.text = draft.activities;
+                          _learningsController.text = draft.learnings;
+                          _obstaclesController.text = draft.obstacles;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('✨ Berhasil membuat Uraian Aktivitas & Pembelajaran resmi!'),
+                            backgroundColor: AppColors.success,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppColors.onPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: const Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(LucideIcons.sparkles, size: 16),
+                          SizedBox(height: 2),
+                          Text('Generate', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
           // Header Instruction
           const Text(
             'Langkah 1: Uraian Aktivitas Magang',
@@ -255,6 +376,19 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             expandedText: expandedText,
             placeholder: 'Ketik beberapa kata di atas untuk melihat kalimat formal otomatis yang dirangkai sistem...',
             isDark: isDark,
+            onApply: expandedText.trim().isNotEmpty && expandedText.trim() != _activitiesController.text.trim()
+                ? () {
+                    setState(() {
+                      _activitiesController.text = expandedText;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('✨ Uraian aktivitas diperbarui dengan kalimat formal!'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                  }
+                : null,
           ),
 
           const SizedBox(height: 20),
@@ -315,6 +449,46 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
 
           const SizedBox(height: 14),
 
+          // Quick Action: Auto-derive Learnings from Activities (Step 1)
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 12),
+            child: OutlinedButton.icon(
+              onPressed: () {
+                final actInput = _activitiesController.text.trim();
+                if (actInput.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Uraian aktivitas pada Langkah 1 masih kosong.'),
+                      backgroundColor: AppColors.warning,
+                    ),
+                  );
+                  return;
+                }
+                final generated = SentenceExpander.expandLearnings('', actInput);
+                setState(() {
+                  _learningsController.text = generated;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('✨ Pembelajaran berhasil diselaraskan otomatis dari aktivitas!'),
+                    backgroundColor: AppColors.success,
+                  ),
+                );
+              },
+              icon: const Icon(LucideIcons.sparkles, size: 15, color: AppColors.primary),
+              label: const Text(
+                'Buat Pembelajaran Otomatis dari Langkah 1',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+              ),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                side: const BorderSide(color: AppColors.primary, width: 1.2),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
+
           // Text Field
           TextFormField(
             controller: _learningsController,
@@ -348,6 +522,19 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             expandedText: expandedText,
             placeholder: 'Ketik topik pembelajaran di atas untuk melihat kalimat formal otomatis yang dirangkai sistem...',
             isDark: isDark,
+            onApply: expandedText.trim().isNotEmpty && expandedText.trim() != _learningsController.text.trim()
+                ? () {
+                    setState(() {
+                      _learningsController.text = expandedText;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('✨ Pembelajaran diperbarui dengan kalimat formal!'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                  }
+                : null,
           ),
 
           const SizedBox(height: 20),
@@ -590,6 +777,19 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             expandedText: expandedText,
             placeholder: 'Ketik kendala di atas atau pilih "Tidak Ada Kendala" untuk melihat kalimat formal otomatis...',
             isDark: isDark,
+            onApply: expandedText.trim().isNotEmpty && expandedText.trim() != _obstaclesController.text.trim()
+                ? () {
+                    setState(() {
+                      _obstaclesController.text = expandedText;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('✨ Kendala diperbarui dengan kalimat formal!'),
+                        backgroundColor: AppColors.success,
+                      ),
+                    );
+                  }
+                : null,
           ),
 
           const SizedBox(height: 20),
@@ -801,6 +1001,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     required String expandedText,
     required String placeholder,
     required bool isDark,
+    VoidCallback? onApply,
   }) {
     final hasContent = expandedText.trim().isNotEmpty;
 
@@ -828,6 +1029,29 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.successDark),
                 ),
               ),
+              if (onApply != null)
+                InkWell(
+                  onTap: onApply,
+                  borderRadius: BorderRadius.circular(8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.success,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(LucideIcons.check, size: 12, color: Colors.white),
+                        SizedBox(width: 4),
+                        Text(
+                          'Terapkan Kalimat',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
           const SizedBox(height: 8),
