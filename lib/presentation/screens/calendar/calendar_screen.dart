@@ -70,8 +70,8 @@ class CalendarScreen extends ConsumerWidget {
                       color: AppColors.primary.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                     ),
-                    todayTextStyle: const TextStyle(
-                      color: AppColors.primary,
+                    todayTextStyle: TextStyle(
+                      color: isDark ? AppColors.primary : AppColors.primaryDark,
                       fontWeight: FontWeight.w700,
                     ),
                     selectedDecoration: const BoxDecoration(
@@ -79,7 +79,7 @@ class CalendarScreen extends ConsumerWidget {
                       shape: BoxShape.circle,
                     ),
                     selectedTextStyle: const TextStyle(
-                      color: Colors.white,
+                      color: AppColors.onPrimary,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
