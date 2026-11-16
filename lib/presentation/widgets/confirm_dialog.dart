@@ -70,7 +70,7 @@ class ConfirmDialog extends StatelessWidget {
               child: Icon(
                 icon,
                 size: 20,
-                color: isDestructive ? AppColors.danger : AppColors.primary,
+                color: isDestructive ? AppColors.danger : (isDark ? AppColors.primary : AppColors.accentAmber),
               ),
             ),
             const SizedBox(width: 12),
@@ -120,11 +120,11 @@ class ConfirmDialog extends StatelessWidget {
           onPressed: () => Navigator.of(context).pop(true),
           style: ElevatedButton.styleFrom(
             backgroundColor: isDestructive ? AppColors.danger : AppColors.primary,
-            foregroundColor: Colors.white,
+            foregroundColor: isDestructive ? Colors.white : AppColors.onPrimary,
             minimumSize: const Size(100, 42),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
-          child: Text(confirmText),
+          child: Text(confirmText, style: const TextStyle(fontWeight: FontWeight.w700)),
         ),
       ],
     );
