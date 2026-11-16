@@ -9,7 +9,6 @@ import '../../../data/models/logbook_entry.dart';
 import '../../../providers/logbook_provider.dart';
 import '../../widgets/app_card.dart';
 import 'widgets/logbook_preview_card.dart';
-import 'widgets/logbook_step_indicator.dart';
 
 class LogbookScreen extends ConsumerStatefulWidget {
   const LogbookScreen({super.key});
@@ -19,13 +18,15 @@ class LogbookScreen extends ConsumerStatefulWidget {
 }
 
 class _LogbookScreenState extends ConsumerState<LogbookScreen> {
-  final _pageController = PageController();
-  int _currentStep = 0;
+  // 0: Form Input, 1: Hasil & Pratinjau
+  int _selectedTab = 0;
 
   late final TextEditingController _activitiesController;
   late final TextEditingController _learningsController;
   late final TextEditingController _obstaclesController;
   late final TextEditingController _quickPromptController;
+
+  final _formKey = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -55,19 +56,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     _learningsController.dispose();
     _obstaclesController.dispose();
     _quickPromptController.dispose();
-    _pageController.dispose();
     super.dispose();
-  }
-
-  void _goToStep(int step) {
-    setState(() {
-      _currentStep = step;
-    });
-    _pageController.animateToPage(
-      step,
-      duration: const Duration(milliseconds: 280),
-      curve: Curves.easeInOutCubic,
-    );
   }
 
   void _syncControllersWithState(LogbookState state) {
@@ -88,13 +77,10 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     final logbookNotifier = ref.read(logbookProvider.notifier);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // Synchronize if loaded entry from DB
+    // Synchronize if loaded entry from DB, keep user on form by default so it's always visible
     ref.listen<LogbookState>(logbookProvider, (previous, next) {
       if (next.currentEntry != null && previous?.currentEntry == null) {
         _syncControllersWithState(next);
-        if (next.generatedPreview.isNotEmpty && _currentStep == 0) {
-          _goToStep(3);
-        }
       }
     });
 
@@ -104,13 +90,20 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         actions: [
           IconButton(
             icon: const Icon(LucideIcons.rotateCcw, size: 20),
-            tooltip: 'Mulai Ulang / Segarkan',
+            tooltip: 'Mulai Ulang Form',
             onPressed: () {
               _activitiesController.clear();
               _learningsController.clear();
               _obstaclesController.clear();
+              _quickPromptController.clear();
               logbookNotifier.selectDate(DateTime.now());
-              _goToStep(0);
+              setState(() => _selectedTab = 0);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Form logbook telah direset.'),
+                  duration: Duration(seconds: 2),
+                ),
+              );
             },
           ),
         ],
@@ -118,25 +111,19 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Top Stepper Navigation Header
+            // Top Mode Switcher (Form Pengisian vs Hasil Pratinjau)
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-              child: LogbookStepIndicator(
-                currentStep: _currentStep,
-                onStepTapped: (step) => _goToStep(step),
-              ),
+              child: _buildTopTabBar(isDark, logbookState),
             ),
 
-            // Step Content Pages
+            // Tab Content
             Expanded(
-              child: PageView(
-                controller: _pageController,
-                physics: const NeverScrollableScrollPhysics(),
+              child: IndexedStack(
+                index: _selectedTab,
                 children: [
-                  _buildStepActivities(context, isDark, logbookState, logbookNotifier),
-                  _buildStepLearnings(context, isDark, logbookState, logbookNotifier),
-                  _buildStepObstacles(context, isDark, logbookState, logbookNotifier),
-                  _buildStepPreview(context, isDark, logbookState, logbookNotifier),
+                  _buildFormView(context, isDark, logbookState, logbookNotifier),
+                  _buildPreviewView(context, isDark, logbookState, logbookNotifier),
                 ],
               ),
             ),
@@ -146,711 +133,657 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
     );
   }
 
-  // -------------------------------------------------------------
-  // STEP 1: URAIAN AKTIVITAS
-  // -------------------------------------------------------------
-  Widget _buildStepActivities(
-    BuildContext context,
-    bool isDark,
-    LogbookState state,
-    LogbookNotifier notifier,
-  ) {
-    final expandedText = SentenceExpander.expandActivities(_activitiesController.text);
+  // --------------------------------------------------------------------------
+  // TOP TAB BAR: FORM vs PRATINJAU
+  // --------------------------------------------------------------------------
+  Widget _buildTopTabBar(bool isDark, LogbookState state) {
+    final hasSaved = state.currentEntry != null;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurface : const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0),
+          width: 1,
+        ),
+      ),
+      child: Row(
         children: [
-          // Date Selector Header Card
-          AppCard(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            onTap: () async {
-              final picked = await showDatePicker(
-                context: context,
-                initialDate: state.selectedDate,
-                firstDate: DateTime(2020),
-                lastDate: DateTime(2030),
-              );
-              if (picked != null) {
-                await notifier.selectDate(picked);
-                final updated = ref.read(logbookProvider);
-                _syncControllersWithState(updated);
-              }
-            },
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryContainer,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(LucideIcons.calendar, size: 18, color: AppColors.primary),
+          // Tab 1: Form Pengisian
+          Expanded(
+            child: InkWell(
+              onTap: () => setState(() => _selectedTab = 0),
+              borderRadius: BorderRadius.circular(10),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: _selectedTab == 0
+                      ? AppColors.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: _selectedTab == 0
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Tanggal Aktivitas Kegiatan',
-                        style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        DateFormatter.formatIndonesianDate(state.selectedDate),
-                        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
-                      ),
-                    ],
-                  ),
-                ),
-                const Icon(LucideIcons.calendarClock, size: 18, color: AppColors.primary),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 16),
-
-          // Smart Fill: AI Auto-Generate Card
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFFFFBEB),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: isDark ? 0.4 : 0.7),
-                width: 1.2,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(LucideIcons.sparkles, size: 15, color: AppColors.onPrimary),
+                    Icon(
+                      LucideIcons.fileEdit,
+                      size: 15,
+                      color: _selectedTab == 0 ? AppColors.onPrimary : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                     ),
-                    const SizedBox(width: 8),
-                    const Expanded(
+                    const SizedBox(width: 6),
+                    Flexible(
                       child: Text(
-                        'Smart Fill: Buat Otomatis dari 1 Kalimat Singkat',
-                        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  'Ketik kalimat sederhana (misal: "mengikuti orientasi pemagangan nasional batch 3A angkatan 2 tahun 2026 dan mengikuti arahan menginstall Autocad"), sistem akan langsung merangkai Uraian Aktivitas dan Pembelajaran resmi.',
-                  style: TextStyle(
-                    fontSize: 11.5,
-                    height: 1.35,
-                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      child: TextField(
-                        controller: _quickPromptController,
-                        maxLines: 2,
-                        style: const TextStyle(fontSize: 12.5),
-                        decoration: InputDecoration(
-                          hintText: 'Ketik aktivitas sederhana Anda di sini...',
-                          hintStyle: TextStyle(
-                            fontSize: 11.5,
-                            color: isDark ? AppColors.darkTextSecondary : AppColors.textTertiary,
-                          ),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                          filled: true,
-                          fillColor: isDark ? AppColors.darkSurface : Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(
-                              color: isDark ? AppColors.darkBorder : AppColors.border,
-                            ),
-                          ),
+                        'Form Pengisian',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: _selectedTab == 0 ? AppColors.onPrimary : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        final input = _quickPromptController.text.trim();
-                        if (input.isEmpty) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Silakan masukkan kalimat kegiatan sederhana terlebih dahulu.'),
-                              backgroundColor: AppColors.warning,
-                            ),
-                          );
-                          return;
-                        }
-                        final draft = SentenceExpander.generateSmartLogbook(input);
-                        setState(() {
-                          _activitiesController.text = draft.activities;
-                          _learningsController.text = draft.learnings;
-                          _obstaclesController.text = draft.obstacles;
-                        });
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('✨ Berhasil membuat Uraian Aktivitas & Pembelajaran resmi!'),
-                            backgroundColor: AppColors.success,
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: AppColors.onPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(LucideIcons.sparkles, size: 16),
-                          SizedBox(height: 2),
-                          Text('Generate', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
-                        ],
-                      ),
-                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(width: 4),
 
-          // Header Instruction
-          const Text(
-            'Langkah 1: Uraian Aktivitas Magang',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Ketik beberapa kata atau poin kegiatan survei & pemetaan hari ini. RAMA akan otomatis merangkainya menjadi kalimat formal berstandar Kantor Pertanahan.',
-            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
-          ),
-
-          const SizedBox(height: 14),
-
-          // Text Field
-          TextFormField(
-            controller: _activitiesController,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Ketik beberapa kata, contoh:\n• pengukuran bidang tanah GNSS RTK di Kec. Maesan\n• verifikasi tanda batas patok dan saksi batas\n• digitasi peta bidang dan input GeoKKP',
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Quick Chips for Activities
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              _buildChip('Pengukuran Lapangan GNSS RTK', _activitiesController, isDark),
-              _buildChip('Pemasangan Patok Batas Bidang', _activitiesController, isDark),
-              _buildChip('Pengolahan Data Koordinat TM-3°', _activitiesController, isDark),
-              _buildChip('Digitasi Peta Bidang GeoKKP', _activitiesController, isDark),
-              _buildChip('Pembuatan Gambar Ukur (GU)', _activitiesController, isDark),
-              _buildChip('Pengecekan Warkah & Ploting PBT', _activitiesController, isDark),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          // Live Expansion Preview Box
-          _buildLiveExpansionBox(
-            title: 'Kalimat Tambahan Otomatis dari Sistem:',
-            expandedText: expandedText,
-            placeholder: 'Ketik beberapa kata di atas untuk melihat kalimat formal otomatis yang dirangkai sistem...',
-            isDark: isDark,
-            onApply: expandedText.trim().isNotEmpty && expandedText.trim() != _activitiesController.text.trim()
-                ? () {
-                    setState(() {
-                      _activitiesController.text = expandedText;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✨ Uraian aktivitas diperbarui dengan kalimat formal!'),
-                        backgroundColor: AppColors.success,
+          // Tab 2: Hasil & Pratinjau
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                _generatePreviewAndSwitch(false);
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: _selectedTab == 1
+                      ? AppColors.primary
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: _selectedTab == 1
+                      ? [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      LucideIcons.fileCheck2,
+                      size: 15,
+                      color: _selectedTab == 1 ? AppColors.onPrimary : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                    ),
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Hasil & Pratinjau',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w700,
+                          color: _selectedTab == 1 ? AppColors.onPrimary : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
+                        ),
                       ),
-                    );
-                  }
-                : null,
-          ),
-
-          const SizedBox(height: 20),
-
-          // Navigation Button
-          ElevatedButton.icon(
-            onPressed: () {
-              if (_activitiesController.text.trim().isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Silakan ketik beberapa kata uraian aktivitas terlebih dahulu.'),
-                    backgroundColor: AppColors.warning,
-                  ),
-                );
-                return;
-              }
-              _goToStep(1);
-            },
-            icon: const Icon(LucideIcons.arrowRight, size: 18),
-            label: const Text('Lanjut ke Pembelajaran (2/3)', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary,
-              foregroundColor: AppColors.onPrimary,
-              minimumSize: const Size.fromHeight(48),
+                    ),
+                    if (hasSaved) ...[
+                      const SizedBox(width: 4),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: AppColors.success,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 16),
         ],
       ),
     );
   }
 
-  // -------------------------------------------------------------
-  // STEP 2: PEMBELAJARAN YANG DIPEROLEH
-  // -------------------------------------------------------------
-  Widget _buildStepLearnings(
+  // --------------------------------------------------------------------------
+  // TAB 1: FORM PENGISIAN LENGKAP
+  // --------------------------------------------------------------------------
+  Widget _buildFormView(
     BuildContext context,
     bool isDark,
     LogbookState state,
     LogbookNotifier notifier,
   ) {
-    final expandedText = SentenceExpander.expandLearnings(_learningsController.text);
+    final expandedActivities = SentenceExpander.expandActivities(_activitiesController.text);
+    final expandedLearnings = SentenceExpander.expandLearnings(_learningsController.text, _activitiesController.text);
+    final expandedObstacles = SentenceExpander.expandObstacles(_obstaclesController.text);
+
+    final isSaved = state.currentEntry != null;
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Langkah 2: Pembelajaran yang Diperoleh',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Ketik wawasan teknis, regulasi kadastral, atau keterampilan survei pemetaan yang Anda peroleh hari ini. Sistem akan memperluasnya menjadi kalimat pembelajaran formal.',
-            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
-          ),
-
-          const SizedBox(height: 14),
-
-          // Quick Action: Auto-derive Learnings from Activities (Step 1)
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.only(bottom: 12),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                final actInput = _activitiesController.text.trim();
-                if (actInput.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Uraian aktivitas pada Langkah 1 masih kosong.'),
-                      backgroundColor: AppColors.warning,
-                    ),
-                  );
-                  return;
-                }
-                final generated = SentenceExpander.expandLearnings('', actInput);
-                setState(() {
-                  _learningsController.text = generated;
-                });
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('✨ Pembelajaran berhasil diselaraskan otomatis dari aktivitas!'),
-                    backgroundColor: AppColors.success,
-                  ),
-                );
-              },
-              icon: const Icon(LucideIcons.sparkles, size: 15, color: AppColors.primary),
-              label: const Text(
-                'Buat Pembelajaran Otomatis dari Langkah 1',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
-              ),
-              style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                side: const BorderSide(color: AppColors.primary, width: 1.2),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ),
-
-          // Text Field
-          TextFormField(
-            controller: _learningsController,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Contoh: sistem proyeksi TM-3 BPN, metode GNSS RTK & Total Station, azas contradictoire delimitatie, alur integrasi GeoKKP',
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Quick Chips for Learnings
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              _buildChip('Sistem Proyeksi TM-3° BPN', _learningsController, isDark),
-              _buildChip('Metode GNSS RTK & Total Station', _learningsController, isDark),
-              _buildChip('Azas Contradictoire Delimitatie', _learningsController, isDark),
-              _buildChip('Standar Gambar Ukur & GeoKKP', _learningsController, isDark),
-              _buildChip('Regulasi Survei Kadastral ATR/BPN', _learningsController, isDark),
-              _buildChip('Komunikasi Lapangan Bersama Pamong', _learningsController, isDark),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          // Live Expansion Preview Box
-          _buildLiveExpansionBox(
-            title: 'Kalimat Tambahan Otomatis dari Sistem:',
-            expandedText: expandedText,
-            placeholder: 'Ketik topik pembelajaran di atas untuk melihat kalimat formal otomatis yang dirangkai sistem...',
-            isDark: isDark,
-            onApply: expandedText.trim().isNotEmpty && expandedText.trim() != _learningsController.text.trim()
-                ? () {
-                    setState(() {
-                      _learningsController.text = expandedText;
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('✨ Pembelajaran diperbarui dengan kalimat formal!'),
-                        backgroundColor: AppColors.success,
-                      ),
-                    );
-                  }
-                : null,
-          ),
-
-          const SizedBox(height: 20),
-
-          // Navigation Buttons: Back and Forward
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: OutlinedButton.icon(
-                  onPressed: () => _goToStep(0),
-                  icon: const Icon(LucideIcons.arrowLeft, size: 16),
-                  label: const Text('Kembali'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Status Info Banner if already saved
+            if (isSaved)
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF14532D).withValues(alpha: 0.3) : const Color(0xFFDCFCE7),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0xFF22C55E),
+                    width: 1,
                   ),
                 ),
+                child: Row(
+                  children: [
+                    const Icon(LucideIcons.checkCircle2, size: 16, color: AppColors.success),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Logbook tanggal ini sudah tersimpan (${state.currentEntry?.statusDisplayName ?? "Tersimpan"}). Anda dapat mengedit isian form di bawah.',
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppColors.darkTextPrimary : const Color(0xFF14532D),
+                        ),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() => _selectedTab = 1),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('Lihat Hasil', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 3,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    if (_learningsController.text.trim().isEmpty) {
+
+            // Date Selector Bar
+            AppCard(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              onTap: () async {
+                final picked = await showDatePicker(
+                  context: context,
+                  initialDate: state.selectedDate,
+                  firstDate: DateTime(2020),
+                  lastDate: DateTime(2030),
+                );
+                if (picked != null) {
+                  await notifier.selectDate(picked);
+                  final updated = ref.read(logbookProvider);
+                  _syncControllersWithState(updated);
+                }
+              },
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryContainer,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(LucideIcons.calendar, size: 18, color: AppColors.primary),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Tanggal Aktivitas Kegiatan',
+                          style: TextStyle(fontSize: 11, color: AppColors.textSecondary),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          DateFormatter.formatIndonesianDate(state.selectedDate),
+                          style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(LucideIcons.calendarClock, size: 18, color: AppColors.primary),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 14),
+
+            // Smart Fill: AI Auto-Generate Card
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFFFFBEB),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: isDark ? 0.4 : 0.7),
+                  width: 1.2,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(LucideIcons.sparkles, size: 15, color: AppColors.onPrimary),
+                      ),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          'Smart Fill: Buat Otomatis dari 1 Kalimat Singkat',
+                          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Ketik kalimat sederhana (misal: "mengikuti orientasi pemagangan nasional batch 3A angkatan 2 tahun 2026 dan mengikuti arahan menginstall Autocad"), sistem akan langsung merangkai Uraian Aktivitas dan Pembelajaran resmi.',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      height: 1.35,
+                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _quickPromptController,
+                          maxLines: 2,
+                          style: const TextStyle(fontSize: 12.5),
+                          decoration: InputDecoration(
+                            hintText: 'Ketik aktivitas sederhana Anda di sini...',
+                            hintStyle: TextStyle(
+                              fontSize: 11.5,
+                              color: isDark ? AppColors.darkTextSecondary : AppColors.textTertiary,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            filled: true,
+                            fillColor: isDark ? AppColors.darkSurface : Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              borderSide: BorderSide(
+                                color: isDark ? AppColors.darkBorder : AppColors.border,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      ElevatedButton(
+                        onPressed: () {
+                          final input = _quickPromptController.text.trim();
+                          if (input.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Silakan masukkan kalimat kegiatan sederhana terlebih dahulu.'),
+                                backgroundColor: AppColors.warning,
+                              ),
+                            );
+                            return;
+                          }
+                          final draft = SentenceExpander.generateSmartLogbook(input);
+                          setState(() {
+                            _activitiesController.text = draft.activities;
+                            _learningsController.text = draft.learnings;
+                            _obstaclesController.text = draft.obstacles;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('✨ Berhasil membuat Uraian Aktivitas & Pembelajaran resmi!'),
+                              backgroundColor: AppColors.success,
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: AppColors.onPrimary,
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(LucideIcons.sparkles, size: 16),
+                            SizedBox(height: 2),
+                            Text('Generate', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // =========================================================
+            // 1. URAIAN AKTIVITAS FIELD
+            // =========================================================
+            _buildFieldHeader(
+              title: '1. Uraian Aktivitas Magang',
+              subtitle: 'Ketik uraian tugas teknis atau kegiatan Anda hari ini.',
+              isRequired: true,
+              isDark: isDark,
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _activitiesController,
+              maxLines: 4,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return 'Uraian aktivitas magang tidak boleh kosong';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                hintText: 'Ketik kegiatan, contoh: pengukuran bidang tanah GNSS RTK, digitasi peta AutoCAD, pemasangan patok tanda batas...',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _buildChip('Pengukuran Lapangan GNSS RTK', _activitiesController, isDark),
+                _buildChip('Pemasangan Patok Batas Bidang', _activitiesController, isDark),
+                _buildChip('Pengolahan Data Koordinat TM-3°', _activitiesController, isDark),
+                _buildChip('Digitasi Peta Bidang GeoKKP', _activitiesController, isDark),
+                _buildChip('Pembuatan Gambar Ukur (GU)', _activitiesController, isDark),
+                _buildChip('Pengecekan Warkah & Ploting PBT', _activitiesController, isDark),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildLiveExpansionBox(
+              title: 'Kalimat Formal Otomatis Sistem:',
+              expandedText: expandedActivities,
+              placeholder: 'Ketik beberapa kata di atas untuk melihat kalimat formal otomatis...',
+              isDark: isDark,
+              onApply: expandedActivities.trim().isNotEmpty && expandedActivities.trim() != _activitiesController.text.trim()
+                  ? () {
+                      setState(() => _activitiesController.text = expandedActivities);
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Silakan ketik pembelajaran yang diperoleh terlebih dahulu.'),
+                          content: Text('✨ Uraian aktivitas diperbarui dengan kalimat formal!'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    }
+                  : null,
+            ),
+
+            const SizedBox(height: 20),
+
+            // =========================================================
+            // 2. PEMBELAJARAN YANG DIPEROLEH FIELD
+            // =========================================================
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _buildFieldHeader(
+                    title: '2. Pembelajaran yang Diperoleh',
+                    subtitle: 'Wawasan teknis, regulasi, atau keahlian baru yang didapat.',
+                    isRequired: true,
+                    isDark: isDark,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    final actInput = _activitiesController.text.trim();
+                    if (actInput.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Isi Uraian Aktivitas terlebih dahulu.'),
                           backgroundColor: AppColors.warning,
                         ),
                       );
                       return;
                     }
-                    _goToStep(2);
-                  },
-                  icon: const Icon(LucideIcons.arrowRight, size: 18),
-                  label: const Text('Lanjut ke Kendala (3/3)', style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    minimumSize: const Size.fromHeight(48),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-        ],
-      ),
-    );
-  }
-
-  // -------------------------------------------------------------
-  // STEP 3: KENDALA YANG DIHADAPI
-  // -------------------------------------------------------------
-  Widget _buildStepObstacles(
-    BuildContext context,
-    bool isDark,
-    LogbookState state,
-    LogbookNotifier notifier,
-  ) {
-    final expandedText = SentenceExpander.expandObstacles(_obstaclesController.text);
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Langkah 3: Kendala yang Dihadapi',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 4),
-          const Text(
-            'Ketik kendala teknis atau lapangan jika ada hambatan. Jika kegiatan berjalan lancar, Anda dapat memilih salah satu template resmi di bawah.',
-            style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
-          ),
-
-          const SizedBox(height: 14),
-
-          // Quick Action Card: Pilihan Template Tidak Ada Kendala
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF0FDF4),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFF86EFAC),
-                width: 1.2,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const Icon(LucideIcons.sparkles, size: 18, color: AppColors.success),
-                    const SizedBox(width: 8),
-                    const Expanded(
-                      child: Text(
-                        'Pilihan Cepat: Hari Ini Lancar (Tanpa Kendala)',
-                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.successDark),
-                      ),
-                    ),
-                    InkWell(
-                      onTap: () {
-                        setState(() {
-                          _obstaclesController.text = SentenceExpander.defaultNoObstacle;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppColors.success,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'Pilih Utama',
-                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Colors.white),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  'Klik salah satu template kalimat di bawah jika seluruh kegiatan survei dan pemetaan berjalan lancar tanpa kendala:',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.35),
-                ),
-                const SizedBox(height: 10),
-                ...SentenceExpander.noObstacleTemplates.asMap().entries.map((entry) {
-                  final idx = entry.key;
-                  final template = entry.value;
-                  final isSelected = _obstaclesController.text.trim() == template;
-
-                  final titles = [
-                    'Template 1: Target Survei Selesai Presisi',
-                    'Template 2: Sinergi Tim & Aparatur Desa',
-                    'Template 3: Peralatan & Sistem GeoKKP Optimal',
-                  ];
-
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 6),
-                    child: InkWell(
-                      onTap: () {
-                        setState(() {
-                          _obstaclesController.text = template;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: isSelected
-                              ? (isDark ? const Color(0xFF14532D).withValues(alpha: 0.4) : const Color(0xFFDCFCE7))
-                              : (isDark ? AppColors.darkSurface : Colors.white),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isSelected ? const Color(0xFF22C55E) : (isDark ? AppColors.darkBorder : const Color(0xFFE2E8F0)),
-                            width: isSelected ? 1.5 : 1.0,
-                          ),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              isSelected ? LucideIcons.checkCircle2 : LucideIcons.circle,
-                              size: 16,
-                              color: isSelected ? AppColors.success : AppColors.textTertiary,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    titles[idx],
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w700,
-                                      color: isSelected
-                                          ? AppColors.successDark
-                                          : (isDark ? AppColors.darkTextPrimary : AppColors.textPrimary),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    template,
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      height: 1.35,
-                                      color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 14),
-
-          // Text Field
-          TextFormField(
-            controller: _obstaclesController,
-            maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Contoh: sinyal satelit GNSS terhalang vegetasi lebat, pemilik batas tanah belum hadir, cuaca hujan di lokasi survei, sinkronisasi GeoKKP (atau kosongkan)',
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Quick Chips for Obstacles
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              _buildChip('Sinyal GNSS Terhalang Pohon', _obstaclesController, isDark),
-              _buildChip('Pemilik Batas Belum Hadir', _obstaclesController, isDark),
-              _buildChip('Tumpang Tindih (Overlap) Peta Lama', _obstaclesController, isDark),
-              _buildChip('Kondisi Cuaca Hujan Lapangan', _obstaclesController, isDark),
-              _buildChip('Topografi Medan Perbukitan', _obstaclesController, isDark),
-              _buildChip('Tidak Ada Kendala', _obstaclesController, isDark),
-            ],
-          ),
-
-          const SizedBox(height: 14),
-
-          // Live Expansion Preview Box
-          _buildLiveExpansionBox(
-            title: 'Kalimat Tambahan Otomatis dari Sistem:',
-            expandedText: expandedText,
-            placeholder: 'Ketik kendala di atas atau pilih "Tidak Ada Kendala" untuk melihat kalimat formal otomatis...',
-            isDark: isDark,
-            onApply: expandedText.trim().isNotEmpty && expandedText.trim() != _obstaclesController.text.trim()
-                ? () {
-                    setState(() {
-                      _obstaclesController.text = expandedText;
-                    });
+                    final generated = SentenceExpander.expandLearnings('', actInput);
+                    setState(() => _learningsController.text = generated);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('✨ Kendala diperbarui dengan kalimat formal!'),
+                        content: Text('✨ Pembelajaran diselaraskan dari aktivitas!'),
                         backgroundColor: AppColors.success,
                       ),
                     );
-                  }
-                : null,
-          ),
-
-          const SizedBox(height: 20),
-
-          // Navigation Buttons: Back and Mulai Buat
-          Row(
-            children: [
-              Expanded(
-                flex: 2,
-                child: OutlinedButton.icon(
-                  onPressed: () => _goToStep(1),
-                  icon: const Icon(LucideIcons.arrowLeft, size: 16),
-                  label: const Text('Kembali'),
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(48),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                flex: 3,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    final obsInput = _obstaclesController.text.trim().isEmpty
-                        ? 'Tidak ada kendala'
-                        : _obstaclesController.text;
-
-                    notifier.updateFields(
-                      activities: _activitiesController.text,
-                      learnings: _learningsController.text,
-                      obstacles: obsInput,
-                    );
-                    notifier.buildReport(
-                      activities: _activitiesController.text,
-                      learnings: _learningsController.text,
-                      obstacles: obsInput,
-                    );
-
-                    _goToStep(3);
                   },
-                  icon: const Icon(LucideIcons.sparkles, size: 18),
-                  label: const Text('Mulai Buat Laporan', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.onPrimary,
-                    minimumSize: const Size.fromHeight(48),
+                  icon: const Icon(LucideIcons.sparkles, size: 13),
+                  label: const Text('Buat dari Aktivitas', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700)),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _learningsController,
+              maxLines: 4,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return 'Pembelajaran yang diperoleh tidak boleh kosong';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                hintText: 'Contoh: sistem proyeksi TM-3 BPN, metode GNSS RTK & Total Station, azas contradictoire delimitatie, alur integrasi GeoKKP...',
               ),
-            ],
-          ),
-          const SizedBox(height: 16),
-        ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _buildChip('Sistem Proyeksi TM-3° BPN', _learningsController, isDark),
+                _buildChip('Metode GNSS RTK & Total Station', _learningsController, isDark),
+                _buildChip('Azas Contradictoire Delimitatie', _learningsController, isDark),
+                _buildChip('Standar Gambar Ukur & GeoKKP', _learningsController, isDark),
+                _buildChip('Regulasi Survei Kadastral ATR/BPN', _learningsController, isDark),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildLiveExpansionBox(
+              title: 'Kalimat Pembelajaran Formal Sistem:',
+              expandedText: expandedLearnings,
+              placeholder: 'Ketik poin pembelajaran di atas atau klik "Buat dari Aktivitas"...',
+              isDark: isDark,
+              onApply: expandedLearnings.trim().isNotEmpty && expandedLearnings.trim() != _learningsController.text.trim()
+                  ? () {
+                      setState(() => _learningsController.text = expandedLearnings);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('✨ Pembelajaran diperbarui dengan kalimat formal!'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    }
+                  : null,
+            ),
+
+            const SizedBox(height: 20),
+
+            // =========================================================
+            // 3. KENDALA YANG DIHADAPI FIELD
+            // =========================================================
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: _buildFieldHeader(
+                    title: '3. Kendala yang Dihadapi',
+                    subtitle: 'Kendala teknis di lapangan/kantor, atau pilih opsi lancar.',
+                    isRequired: true,
+                    isDark: isDark,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _obstaclesController.text = SentenceExpander.defaultNoObstacle;
+                    });
+                  },
+                  icon: const Icon(LucideIcons.checkCircle2, size: 13, color: AppColors.success),
+                  label: const Text('Tidak Ada Kendala', style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: AppColors.successDark)),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    minimumSize: Size.zero,
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            TextFormField(
+              controller: _obstaclesController,
+              maxLines: 3,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return 'Kendala yang dihadapi tidak boleh kosong';
+                }
+                return null;
+              },
+              decoration: const InputDecoration(
+                hintText: 'Contoh: sinyal satelit GNSS terhalang vegetasi, cuaca hujan lapangan, atau klik "Tidak Ada Kendala"...',
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 6,
+              runSpacing: 6,
+              children: [
+                _buildChip('Tidak Ada Kendala', _obstaclesController, isDark),
+                _buildChip('Sinyal GNSS Terhalang Pohon', _obstaclesController, isDark),
+                _buildChip('Pemilik Batas Belum Hadir', _obstaclesController, isDark),
+                _buildChip('Kondisi Cuaca Hujan Lapangan', _obstaclesController, isDark),
+                _buildChip('Topografi Medan Perbukitan', _obstaclesController, isDark),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildLiveExpansionBox(
+              title: 'Kalimat Kendala Formal Sistem:',
+              expandedText: expandedObstacles,
+              placeholder: 'Ketik kendala di atas atau pilih "Tidak Ada Kendala"...',
+              isDark: isDark,
+              onApply: expandedObstacles.trim().isNotEmpty && expandedObstacles.trim() != _obstaclesController.text.trim()
+                  ? () {
+                      setState(() => _obstaclesController.text = expandedObstacles);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('✨ Kendala diperbarui dengan kalimat formal!'),
+                          backgroundColor: AppColors.success,
+                        ),
+                      );
+                    }
+                  : null,
+            ),
+
+            const SizedBox(height: 24),
+
+            // PRIMARY SUBMIT BUTTON
+            ElevatedButton.icon(
+              onPressed: () => _generatePreviewAndSwitch(true),
+              icon: const Icon(LucideIcons.fileCheck2, size: 20),
+              label: const Text(
+                'Buat & Lihat Hasil Laporan',
+                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.onPrimary,
+                minimumSize: const Size.fromHeight(50),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
 
-  // -------------------------------------------------------------
-  // STEP 4: PRATINJAU & HASIL LAPORAN
-  // -------------------------------------------------------------
-  Widget _buildStepPreview(
+  void _generatePreviewAndSwitch(bool validate) {
+    if (validate) {
+      if (!(_formKey.currentState?.validate() ?? false)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Silakan lengkapi kolom yang wajib diisi terlebih dahulu.'),
+            backgroundColor: AppColors.warning,
+          ),
+        );
+        return;
+      }
+    }
+
+    final obsInput = _obstaclesController.text.trim().isEmpty
+        ? SentenceExpander.defaultNoObstacle
+        : _obstaclesController.text;
+
+    final notifier = ref.read(logbookProvider.notifier);
+    notifier.updateFields(
+      activities: _activitiesController.text,
+      learnings: _learningsController.text,
+      obstacles: obsInput,
+    );
+    notifier.buildReport(
+      activities: _activitiesController.text,
+      learnings: _learningsController.text,
+      obstacles: obsInput,
+    );
+
+    setState(() => _selectedTab = 1);
+  }
+
+  // --------------------------------------------------------------------------
+  // TAB 2: PRATINJAU & HASIL LAPORAN RESMI
+  // --------------------------------------------------------------------------
+  Widget _buildPreviewView(
     BuildContext context,
     bool isDark,
     LogbookState state,
@@ -861,7 +794,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         : SentenceExpander.expandActivities(_activitiesController.text);
     final learningsText = state.learnings.isNotEmpty
         ? state.learnings
-        : SentenceExpander.expandLearnings(_learningsController.text);
+        : SentenceExpander.expandLearnings(_learningsController.text, _activitiesController.text);
     final obstaclesText = state.obstacles.isNotEmpty
         ? state.obstacles
         : SentenceExpander.expandObstacles(_obstaclesController.text);
@@ -876,17 +809,32 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
           );
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(18, 12, 18, 95),
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 95),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Langkah 4: Pratinjau & Salin Laporan Magang',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Pratinjau & Salin Laporan Magang',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+              ),
+              OutlinedButton.icon(
+                onPressed: () => setState(() => _selectedTab = 0),
+                icon: const Icon(LucideIcons.edit3, size: 14),
+                label: const Text('Edit Form', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
           const Text(
-            'Setiap bagian telah disusun menjadi kalimat formal terpisah. Anda dapat menyalin masing-masing bagian untuk kolom portal yang sesuai, atau menyalin format lengkap sekaligus.',
+            'Laporan telah tersusun dalam format resmi kedinasan. Anda dapat menyalin masing-masing bagian untuk kolom portal magang, atau menyalin seluruh format lengkap.',
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
           ),
 
@@ -965,7 +913,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               }
             },
             onEdit: () {
-              _goToStep(0);
+              setState(() => _selectedTab = 0);
             },
             onMarkSubmitted: () async {
               try {
@@ -987,15 +935,50 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
               }
             },
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
-  // -------------------------------------------------------------
+  // --------------------------------------------------------------------------
   // HELPER WIDGETS
-  // -------------------------------------------------------------
+  // --------------------------------------------------------------------------
+  Widget _buildFieldHeader({
+    required String title,
+    required String subtitle,
+    bool isRequired = false,
+    bool isDark = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          text: TextSpan(
+            text: title,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
+            ),
+            children: [
+              if (isRequired)
+                const TextSpan(
+                  text: ' *',
+                  style: TextStyle(color: AppColors.danger, fontWeight: FontWeight.bold),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          subtitle,
+          style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+        ),
+      ],
+    );
+  }
+
   Widget _buildLiveExpansionBox({
     required String title,
     required String expandedText,
@@ -1007,10 +990,10 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: hasContent ? const Color(0xFF86EFAC) : (isDark ? AppColors.darkBorder : AppColors.border),
           width: 1.2,
@@ -1021,12 +1004,12 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         children: [
           Row(
             children: [
-              const Icon(LucideIcons.sparkles, size: 16, color: AppColors.success),
+              const Icon(LucideIcons.sparkles, size: 15, color: AppColors.success),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   title,
-                  style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: AppColors.successDark),
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.successDark),
                 ),
               ),
               if (onApply != null)
@@ -1054,12 +1037,12 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 ),
             ],
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Text(
             hasContent ? expandedText : placeholder,
             style: TextStyle(
-              fontSize: 12.5,
-              height: 1.45,
+              fontSize: 12,
+              height: 1.4,
               fontWeight: hasContent ? FontWeight.w600 : FontWeight.w400,
               color: hasContent
                   ? (isDark ? AppColors.darkTextPrimary : const Color(0xFF14532D))
@@ -1091,7 +1074,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
         },
         borderRadius: BorderRadius.circular(20),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurfaceElevated : const Color(0xFFF1F5F9),
             borderRadius: BorderRadius.circular(20),
@@ -1105,14 +1088,14 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             children: [
               const Icon(
                 LucideIcons.plus,
-                size: 13,
+                size: 12,
                 color: AppColors.primary,
               ),
-              const SizedBox(width: 5),
+              const SizedBox(width: 4),
               Text(
                 text,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                   color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
                 ),
