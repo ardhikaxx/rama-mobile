@@ -7,6 +7,7 @@ import '../../../../providers/logbook_provider.dart';
 import '../attendance/widgets/attendance_dialog.dart';
 import '../calendar/calendar_screen.dart';
 import '../settings/reminder_settings_screen.dart';
+import '../statistics/statistics_screen.dart';
 import 'widgets/daily_progress_card.dart';
 import 'widgets/greeting_header.dart';
 import 'widgets/main_status_card.dart';
@@ -75,6 +76,23 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 18),
 
+                  // Quick Actions Card (Kalender, Statistik, Buat Logbook, Lihat Riwayat)
+                  QuickActionsCard(
+                    onCalendarTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const CalendarScreen()),
+                      );
+                    },
+                    onStatisticsTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const StatisticsScreen()),
+                      );
+                    },
+                    onLogbookTap: () => onNavigateTab(2),
+                    onHistoryTap: () => onNavigateTab(3),
+                  ),
+                  const SizedBox(height: 18),
+
                   // Next Reminder Card
                   NextReminderCard(
                     schedule: data.nextReminder,
@@ -104,19 +122,6 @@ class DashboardScreen extends ConsumerWidget {
                     logbooksCreated: data.logbooksThisWeek,
                     pendingTasks: data.pendingTasksThisWeek,
                     recordedWorkdays: data.totalWorkdaysRecorded,
-                  ),
-                  const SizedBox(height: 18),
-
-                  // Quick Actions Card
-                  QuickActionsCard(
-                    onAttendanceTap: () => _handleAttendance(context, ref, data.attendanceRecord != null),
-                    onLogbookTap: () => onNavigateTab(2),
-                    onCalendarTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const CalendarScreen()),
-                      );
-                    },
-                    onHistoryTap: () => onNavigateTab(3),
                   ),
                   const SizedBox(height: 95),
                 ],
