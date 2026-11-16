@@ -77,12 +77,12 @@ class HistoryAttendanceTile extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: isCheckIn ? AppColors.primaryContainer : const Color(0xFFE0E7FF),
+                  color: isCheckIn ? AppColors.primaryContainer : (isDark ? AppColors.darkSurfaceElevated : AppColors.primaryContainer),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   isCheckIn ? LucideIcons.logIn : LucideIcons.logOut,
-                  color: isCheckIn ? AppColors.primary : AppColors.primaryDark,
+                  color: isCheckIn ? AppColors.accentAmber : (isDark ? AppColors.primary : AppColors.primaryDark),
                   size: 20,
                 ),
               ),
