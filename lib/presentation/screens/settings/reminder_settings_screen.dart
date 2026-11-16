@@ -399,10 +399,10 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                   decoration: BoxDecoration(
-                    color: schedule.isEnabled ? AppColors.primaryContainer : const Color(0xFFF1F5F9),
+                    color: schedule.isEnabled ? (isDark ? AppColors.darkPrimaryContainer : AppColors.primaryContainer) : (isDark ? AppColors.darkSurfaceElevated : AppColors.divider),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: schedule.isEnabled ? AppColors.primary.withValues(alpha: 0.3) : AppColors.border,
+                      color: schedule.isEnabled ? AppColors.primary.withValues(alpha: 0.3) : (isDark ? AppColors.darkBorder : AppColors.border),
                     ),
                   ),
                   child: Row(
@@ -410,7 +410,7 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
                       Icon(
                         LucideIcons.clock,
                         size: 15,
-                        color: schedule.isEnabled ? AppColors.primary : AppColors.textTertiary,
+                        color: schedule.isEnabled ? (isDark ? AppColors.primary : AppColors.accentAmber) : AppColors.textTertiary,
                       ),
                       const SizedBox(width: 6),
                       Text(
@@ -418,7 +418,7 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: schedule.isEnabled ? AppColors.primaryDark : AppColors.textTertiary,
+                          color: schedule.isEnabled ? (isDark ? AppColors.primary : AppColors.primaryDark) : AppColors.textTertiary,
                         ),
                       ),
                     ],
