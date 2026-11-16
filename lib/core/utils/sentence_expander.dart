@@ -1,224 +1,120 @@
+class LogbookDraft {
+  final String activities;
+  final String learnings;
+  final String obstacles;
+
+  const LogbookDraft({
+    required this.activities,
+    required this.learnings,
+    required this.obstacles,
+  });
+}
+
 class SentenceExpander {
   const SentenceExpander._();
 
-  /// Default formal sentence when there are no obstacles during internship at Kantah Bondowoso.
+  /// Default formal sentence when there are no obstacles during internship.
   static const String defaultNoObstacle =
-      'Tidak ada kendala berarti dalam pelaksanaan survei dan pemetaan hari ini; seluruh pengukuran batas bidang tanah dan pengolahan data koordinat di wilayah Bondowoso berjalan lancar sesuai standar teknis BPN.';
+      'Tidak ada kendala berarti dalam pelaksanaan kegiatan hari ini; seluruh pengukuran batas bidang tanah dan pengolahan data koordinat di wilayah Bondowoso berjalan lancar sesuai standar teknis BPN.';
 
-  /// Preset templates for smooth cadastral survey & mapping activities without obstacles.
+  /// Preset templates for smooth activities without obstacles.
   static const List<String> noObstacleTemplates = [
-    'Tidak ada kendala berarti dalam pelaksanaan survei dan pemetaan hari ini; seluruh pengukuran batas bidang tanah dan pengolahan data koordinat di wilayah Bondowoso berjalan lancar sesuai standar teknis BPN.',
-    'Seluruh rangkaian kegiatan pengukuran kadastral hari ini terlaksana kondusif tanpa hambatan berkat koordinasi yang baik dengan tim seksi survei pemetaan serta pendampingan perangkat desa setempat.',
-    'Peralatan ukur survei (GNSS/Total Station) dan sistem pemetaan GeoKKP berfungsi optimal dengan akurasi data spasial yang memenuhi toleransi ketelitian pemetaan pertanahan.',
+    'Tidak ada kendala berarti dalam pelaksanaan kegiatan hari ini; seluruh rangkaian aktivitas, pengukuran, dan pengolahan data berjalan lancar sesuai rencana penugasan.',
+    'Seluruh rangkaian kegiatan penugasan hari ini terlaksana kondusif tanpa hambatan berkat koordinasi yang baik dengan tim teknis serta pendampingan pembimbing lapangan.',
+    'Peralatan kerja dan perangkat lunak penunjang berfungsi optimal, seluruh target tugas harian dapat diselesaikan dengan baik sesuai standar operasional prosedur.',
   ];
+
+  /// Generates a complete formal logbook draft (activities, learnings, obstacles) from a single prompt.
+  static LogbookDraft generateSmartLogbook(String rawInput) {
+    final trimmed = rawInput.trim();
+    if (trimmed.isEmpty) {
+      return const LogbookDraft(
+        activities: '',
+        learnings: '',
+        obstacles: defaultNoObstacle,
+      );
+    }
+
+    final activities = expandActivities(trimmed);
+    final learnings = expandLearnings(trimmed);
+    final obstacles = _extractObstaclesFromInput(trimmed);
+
+    return LogbookDraft(
+      activities: activities,
+      learnings: learnings,
+      obstacles: obstacles,
+    );
+  }
 
   /// Automatically expands brief activity keywords/phrases into formal Indonesian sentences.
   static String expandActivities(String rawInput) {
     final trimmed = rawInput.trim();
     if (trimmed.isEmpty) return '';
 
-    final lines = trimmed
-        .split(RegExp(r'[\r\n]+'))
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (lines.isEmpty) return '';
+    // If input is already a very long formal paragraph (>= 22 words) with formal prefixes, preserve it.
+    if (_isAlreadyFormalParagraph(trimmed)) {
+      return trimmed.endsWith('.') ? trimmed : '$trimmed.';
+    }
+
+    final clauses = _splitIntoClauses(trimmed);
+    if (clauses.isEmpty) return '';
 
     final expandedList = <String>[];
 
-    for (final line in lines) {
-      final clean = _cleanBulletOrNumber(line);
+    for (var i = 0; i < clauses.length; i++) {
+      final clean = _cleanBulletOrNumber(clauses[i]);
       if (clean.isEmpty) continue;
 
-      // If already a long formal sentence (e.g. >= 14 words), keep as is
-      if (clean.split(RegExp(r'\s+')).length >= 14 &&
-          (clean.startsWith('Melaksanakan') ||
-              clean.startsWith('Melakukan') ||
-              clean.startsWith('Menyusun') ||
-              clean.startsWith('Mengikuti') ||
-              clean.startsWith('Mengidentifikasi'))) {
-        expandedList.add(clean.endsWith('.') ? clean : '$clean.');
-        continue;
+      final isFirst = i == 0;
+      final expanded = _expandSingleActivityClause(clean, isFirst: isFirst, totalClauses: clauses.length);
+      if (expanded.isNotEmpty) {
+        expandedList.add(expanded);
       }
-
-      final lower = clean.toLowerCase();
-
-      String expanded;
-
-      // 1. Cadastral Survey & Mapping Specialized Rules (Kantah Kab. Bondowoso)
-      if (_containsAny(lower, ['gnss', 'gps', 'rtk', 'geodetik', 'cors'])) {
-        expanded =
-            'Melaksanakan pengukuran bidang tanah di lapangan menggunakan GNSS Geodetik metode RTK untuk memperoleh data koordinat batas yang akurat sesuai standar Kantor Pertanahan.';
-      } else if (_containsAny(lower, ['total station', 'ts', 'theodolite', 'poligon', 'terestrial'])) {
-        expanded =
-            'Melakukan pengukuran sudut dan jarak kerangka dasar pemetaan menggunakan Total Station serta pengukuran poligon batas bidang tanah.';
-      } else if (_containsAny(lower, ['patok', 'tanda batas', 'batas tanah', 'pilar batas', 'pematokan'])) {
-        expanded =
-            'Mengidentifikasi dan memverifikasi pemasangan tanda batas bidang tanah (patok) bersama pemilik tanah dan saksi batas perbatasan sesuai azas contradictoire delimitatie.';
-      } else if (_containsAny(lower, ['ptsl', 'sistematis lengkap', 'desa ptsl'])) {
-        expanded =
-            'Melaksanakan kegiatan survei pengukuran bidang tanah dalam program PTSL (Pendaftaran Tanah Sistematis Lengkap) di wilayah penugasan Kabupaten Bondowoso.';
-      } else if (_containsAny(lower, ['geokkp', 'kkp', 'aplikasi bpn', 'input kkp'])) {
-        expanded =
-            'Melakukan input, verifikasi spasial, dan validasi data bidang tanah pada aplikasi Komputerisasi Kantor Pertanahan (GeoKKP) Kantor Pertanahan Kab. Bondowoso.';
-      } else if (_containsAny(lower, ['autocad', 'cad', 'qgis', 'arcgis', 'gis', 'digitasi', 'peta bidang'])) {
-        expanded =
-            'Melaksanakan digitasi dan penggambaran peta bidang tanah hasil survei lapangan menggunakan perangkat lunak geospasial sesuai standar sistem proyeksi TM-3°.';
-      } else if (_containsAny(lower, ['gambar ukur', 'gu', 'sketsa bidang'])) {
-        expanded =
-            'Menyusun dan menyelesaikan Gambar Ukur (GU) yang memuat sketsa bidang tanah, data ukuran batas, serta informasi saksi perbatasan secara rapi dan akurat.';
-      } else if (_containsAny(lower, ['surat ukur', 'su', 'pbt', 'peta pendaftaran'])) {
-        expanded =
-            'Menyiapkan bahan dan penggambaran Peta Bidang Tanah (PBT) serta Surat Ukur (SU) sebagai kelengkapan dokumen yuridis pemetaan pertanahan.';
-      } else if (_containsAny(lower, ['koordinat', 'tm-3', 'tm3', 'transformasi', 'perataan', 'baseline'])) {
-        expanded =
-            'Melakukan pengolahan raw data hasil survei lapangan, koreksi baseline, dan transformasi koordinat ke sistem proyeksi TM-3° Zona BPN.';
-      } else if (_containsAny(lower, ['warkah', 'arsip warkah', 'ploting', 'tumpang tindih', 'overlap', 'rekonstruksi'])) {
-        expanded =
-            'Melakukan pencarian warkah, pengecekan peta pendaftaran, serta ploting bidang tanah untuk memastikan kepastian batas dan mencegah tumpang tindih (overlap).';
-      } else if (_containsAny(lower, ['pemecahan', 'pemisahan', 'penggabungan', 'pengembalian batas', 'rutin'])) {
-        expanded =
-            'Melakukan survei pengukuran kadastral terkait permohonan $clean secara teliti sesuai SOP survei dan pemetaan Kantor Pertanahan Kab. Bondowoso.';
-      } else if (_containsAny(lower, ['desa', 'kecamatan', 'bondowoso', 'lapangan'])) {
-        expanded =
-            'Melakukan peninjauan lokasi dan pengukuran batas bidang tanah bersama aparatur desa setempat di wilayah Kabupaten Bondowoso.';
-      }
-      // 2. Generic Professional Activity Rules
-      else if (_containsAny(lower, ['ui', 'antarmuka', 'figma', 'desain', 'wireframe', 'layout', 'tampilan'])) {
-        expanded =
-            'Melakukan perancangan dan pengembangan antarmuka (UI) terkait $clean secara terstruktur sesuai dengan standar desain industri.';
-      } else if (_containsAny(lower, ['coding', 'koding', 'ngoding', 'develop', 'fitur', 'implementasi', 'backend', 'frontend', 'logic', 'api'])) {
-        expanded =
-            'Melaksanakan kegiatan implementasi dan pengembangan kode program untuk $clean guna mendukung fungsionalitas sistem.';
-      } else if (_containsAny(lower, ['analisis', 'analisa', 'data', 'rekap', 'rekapitulasi', 'evaluasi data', 'riset data'])) {
-        expanded =
-            'Melakukan kegiatan pengolahan dan analisis data terkait $clean secara cermat untuk menghasilkan laporan yang akurat.';
-      } else if (_containsAny(lower, ['meeting', 'rapat', 'diskusi', 'briefing', 'koordinasi', 'evaluasi mingguan'])) {
-        expanded =
-            'Mengikuti agenda koordinasi dan rapat seksi teknis mengenai $clean guna menyelaraskan target serta progres kerja di Kantah Kab. Bondowoso.';
-      } else if (_containsAny(lower, ['test', 'testing', 'uji', 'pengujian', 'qa', 'quality'])) {
-        expanded =
-            'Melakukan serangkaian proses testing dan pengujian terhadap $clean untuk memastikan seluruh fungsi berjalan tanpa kendala teknis.';
-      } else if (_containsAny(lower, ['dokumen', 'dokumentasi', 'laporan', 'modul', 'panduan', 'notula'])) {
-        expanded =
-            'Menyusun dan menyempurnakan dokumentasi teknis mengenai $clean agar seluruh alur kerja terdokumentasi dengan rapi dan sistematis.';
-      } else if (_containsAny(lower, ['administrasi', 'arsip', 'surat', 'surat menyurat', 'input data', 'pembukuan'])) {
-        expanded =
-            'Mengerjakan penataan arsip dan administrasi kerja terkait $clean secara tertib sesuai arahan dari pembimbing lapangan.';
-      } else if (_startsVerb(clean)) {
-        expanded =
-            'Melaksanakan kegiatan $clean dengan penuh ketelitian dan berkoordinasi aktif bersama tim teknis Kantor Pertanahan Kab. Bondowoso.';
-      } else {
-        expanded =
-            'Melakukan kegiatan teknis survei dan pemetaan terkait $clean secara cermat sesuai arahan instruktur Kantor Pertanahan Kab. Bondowoso.';
-      }
-
-      expandedList.add(expanded.endsWith('.') ? expanded : '$expanded.');
     }
 
-    if (expandedList.length == 1) {
-      return expandedList.first;
-    } else {
-      return expandedList.map((e) => '• $e').join('\n');
-    }
+    if (expandedList.isEmpty) return trimmed;
+
+    // Join sentences into a cohesive, professional paragraph
+    return _joinActivitySentences(expandedList);
   }
 
   /// Automatically expands brief learning keywords/phrases into formal Indonesian sentences.
-  static String expandLearnings(String rawInput) {
-    final trimmed = rawInput.trim();
-    if (trimmed.isEmpty) return '';
+  static String expandLearnings(String rawInput, [String? activitiesContext]) {
+    final effectiveInput = (rawInput.trim().isEmpty && activitiesContext != null && activitiesContext.trim().isNotEmpty)
+        ? activitiesContext.trim()
+        : rawInput.trim();
 
-    final lines = trimmed
-        .split(RegExp(r'[\r\n,]+'))
-        .map((e) => e.trim())
-        .where((e) => e.isNotEmpty)
-        .toList();
-    if (lines.isEmpty) return '';
+    if (effectiveInput.isEmpty) return '';
+
+    // If input is already a long formal learning paragraph, preserve it.
+    if (_isAlreadyFormalParagraph(effectiveInput) &&
+        (effectiveInput.contains('Memahami') ||
+            effectiveInput.contains('Memperoleh') ||
+            effectiveInput.contains('Menguasai') ||
+            effectiveInput.contains('Mendapatkan') ||
+            effectiveInput.contains('Meningkatkan'))) {
+      return effectiveInput.endsWith('.') ? effectiveInput : '$effectiveInput.';
+    }
+
+    final clauses = _splitIntoClauses(effectiveInput);
+    if (clauses.isEmpty) return '';
 
     final expandedList = <String>[];
 
-    for (final line in lines) {
-      final clean = _cleanBulletOrNumber(line);
+    for (var i = 0; i < clauses.length; i++) {
+      final clean = _cleanBulletOrNumber(clauses[i]);
       if (clean.isEmpty) continue;
 
-      if (clean.split(RegExp(r'\s+')).length >= 12 &&
-          (clean.startsWith('Memperoleh') ||
-              clean.startsWith('Memahami') ||
-              clean.startsWith('Mendapatkan') ||
-              clean.startsWith('Menguasai') ||
-              clean.startsWith('Mempelajari'))) {
-        expandedList.add(clean.endsWith('.') ? clean : '$clean.');
-        continue;
+      final isFirst = i == 0;
+      final expanded = _expandSingleLearningClause(clean, isFirst: isFirst, totalClauses: clauses.length);
+      if (expanded.isNotEmpty) {
+        expandedList.add(expanded);
       }
-
-      final lower = clean.toLowerCase();
-
-      String expanded;
-
-      // 1. Cadastral Survey & Mapping Specialized Rules (Kantah Kab. Bondowoso)
-      if (_containsAny(lower, ['tm-3', 'tm3', 'proyeksi', 'transverse mercator', 'sistem koordinat'])) {
-        expanded =
-            'Memahami sistem proyeksi peta TM-3° (Transverse Mercator 3 Derajat) yang menjadi standar resmi pemetaan kadastral di lingkungan Kementerian ATR/BPN.';
-      } else if (_containsAny(lower, ['gnss', 'gps', 'rtk', 'statik', 'geodetik', 'cors'])) {
-        expanded =
-            'Menguasai teknik akuisisi data koordinat presisi tinggi menggunakan receiver GNSS Geodetik metode RTK pada berbagai kondisi medan lapangan.';
-      } else if (_containsAny(lower, ['total station', 'ts', 'theodolite', 'poligon', 'sudut'])) {
-        expanded =
-            'Memahami metode pengukuran terestrial menggunakan Total Station, perhitungan koreksi poligon, dan penentuan posisi titik ikat kerangka dasar pemetaan.';
-      } else if (_containsAny(lower, ['contradictoire', 'delimitatie', 'batas', 'patok'])) {
-        expanded =
-            'Memahami penerapan azas Contradictoire Delimitatie dalam penetapan tanda batas bidang tanah demi mencegah potensi sengketa batas kepemilikan.';
-      } else if (_containsAny(lower, ['geokkp', 'kkp', 'aplikasi bpn'])) {
-        expanded =
-            'Mempelajari alur integrasi data tekstual dan data spasial pertanahan pada sistem Komputerisasi Kantor Pertanahan (GeoKKP) Kementerian ATR/BPN.';
-      } else if (_containsAny(lower, ['gambar ukur', 'gu', 'surat ukur', 'su', 'pbt'])) {
-        expanded =
-            'Memahami tata cara penyusunan Gambar Ukur (GU) dan Surat Ukur (SU) yang sah sesuai ketentuan teknis PMNA/KBPN No. 3 Tahun 1997.';
-      } else if (_containsAny(lower, ['ptsl', 'pendaftaran tanah', 'sistematis'])) {
-        expanded =
-            'Mendapatkan wawasan mendalam mengenai alur kerja program Pendaftaran Tanah Sistematis Lengkap (PTSL) mulai dari pengukuran fisik hingga pembukuan hak.';
-      } else if (_containsAny(lower, ['autocad', 'gis', 'qgis', 'arcgis', 'digitasi', 'peta'])) {
-        expanded =
-            'Meningkatkan kemahiran dalam pengolahan data geospasial, pembuatan topologi bidang tanah bebas overlap, dan kartografi pertanahan digital.';
-      } else if (_containsAny(lower, ['komunikasi', 'masyarakat', 'desa', 'pamong', 'koordinasi'])) {
-        expanded =
-            'Mengasah kemampuan komunikasi lapangan dalam berinteraksi dengan masyarakat pemilik tanah dan perangkat desa di wilayah Kabupaten Bondowoso.';
-      } else if (_containsAny(lower, ['regulasi', 'sop', 'atr', 'bpn', 'survei kadastral', 'hukum pertanahan'])) {
-        expanded =
-            'Memahami regulasi, kode etik surveyor kadastral, serta standar operasional prosedur teknis survei pemetaan di lingkungan Kantor Pertanahan.';
-      }
-      // 2. Generic Technical & Soft Skills Rules
-      else if (_containsAny(lower, ['flutter', 'dart', 'react', 'vue', 'kotlin', 'swift', 'python', 'java', 'sql', 'framework', 'tools'])) {
-        expanded =
-            'Mendapatkan pemahaman teknis yang mendalam mengenai konsep dan penerapan $clean dalam pengembangan aplikasi modern.';
-      } else if (_containsAny(lower, ['git', 'github', 'gitlab', 'version control', 'branch', 'merge'])) {
-        expanded =
-            'Memahami alur kerja version control menggunakan $clean untuk manajemen kode dan kolaborasi tim yang efisien.';
-      } else if (_containsAny(lower, ['database', 'sqlite', 'mysql', 'api', 'rest api', 'backend', 'json'])) {
-        expanded =
-            'Mempelajari cara kerja integrasi data dan pengelolaan database menggunakan $clean secara terstruktur dan aman.';
-      } else if (_containsAny(lower, ['waktu', 'disiplin', 'manajemen waktu', 'tanggung jawab', 'komitmen'])) {
-        expanded =
-            'Melatih kedisiplinan diri dan kemampuan manajemen waktu kerja agar seluruh target survei dan pemetaan dapat dicapai tepat waktu.';
-      } else if (_containsAny(lower, ['troubleshoot', 'debug', 'problem solving', 'analisis masalah', 'pemecahan masalah'])) {
-        expanded =
-            'Mengasah daya pikir kritis dan kemampuan problem solving dalam mengidentifikasi serta menuntaskan kendala operasional lapangan.';
-      } else if (lower.startsWith('belajar ') || lower.startsWith('memahami ') || lower.startsWith('mempelajari ')) {
-        expanded =
-            'Mendapatkan wawasan berharga dalam $clean serta memahami implementasinya secara nyata di Kantor Pertanahan Kab. Bondowoso.';
-      } else {
-        expanded =
-            'Memperoleh pemahaman teknis dan pengalaman berharga mengenai $clean dalam mendukung operasional survei dan pemetaan Kantor Pertanahan Kab. Bondowoso.';
-      }
-
-      expandedList.add(expanded.endsWith('.') ? expanded : '$expanded.');
     }
 
-    if (expandedList.length == 1) {
-      return expandedList.first;
-    } else {
-      return expandedList.map((e) => '• $e').join('\n');
-    }
+    if (expandedList.isEmpty) return effectiveInput;
+
+    return _joinLearningSentences(expandedList);
   }
 
   /// Automatically expands brief obstacle keywords/phrases into formal Indonesian sentences.
@@ -244,7 +140,6 @@ class SentenceExpander {
       'tanpa kendala',
       'tanpa hambatan'
     ])) {
-      // If user typed or picked a full formal sentence already, return it cleanly
       if (trimmed.length >= 30) {
         return trimmed.endsWith('.') ? trimmed : '$trimmed.';
       }
@@ -263,45 +158,452 @@ class SentenceExpander {
 
     String expanded;
 
-    // 1. Cadastral Survey & Mapping Specialized Obstacles (Kantah Kab. Bondowoso)
+    // Cadastral Survey, GIS & Field Obstacles
     if (_containsAny(lower, ['sinyal', 'gps', 'gnss', 'float', 'vegetasi', 'pohon', 'lereng', 'cycle slip'])) {
       expanded =
           'Menghadapi kendala penerimaan sinyal satelit GNSS yang sempat berstatus float akibat kanopi pohon lebat di lokasi survei, yang disiasati dengan metode offset manual menggunakan meteran pita baja dan Total Station.';
     } else if (_containsAny(lower, ['cuaca', 'hujan', 'badai', 'becek', 'hujan lebat'])) {
       expanded =
-          'Menghadapi kondisi cuaca hujan di lokasi pengukuran wilayah Bondowoso yang sempat menunda survei luar ruangan demi keselamatan alat ukur elektronik, namun kegiatan dilanjutkan dengan pengolahan data spasial di kantor.';
+          'Menghadapi kondisi cuaca hujan di lokasi kegiatan yang sempat menunda survei luar ruangan demi keselamatan peralatan elektronik, namun waktu dimanfaatkan untuk pengolahan data dan digitalisasi di kantor.';
     } else if (_containsAny(lower, ['batas', 'pemilik', 'saksi', 'hadir', 'patok hilang', 'tanda batas'])) {
       expanded =
-          'Menemui kendala ketidakhadiran pemilik bidang tanah yang bersebelahan saat penunjukan tanda batas, yang berhasil diselesaikan melalui koordinasi bersama pamong desa setempat untuk penjadwalan verifikasi ulang.';
+          'Menemui kendala ketidakhadiran pemilik bidang tanah yang bersebelahan saat penunjukan tanda batas, yang berhasil diselesaikan melalui koordinasi bersama aparat pemerintah setempat untuk penjadwalan verifikasi ulang.';
     } else if (_containsAny(lower, ['overlap', 'tumpang tindih', 'warkah', 'peta lama', 'selisih luas'])) {
       expanded =
           'Menemukan ketidaksesuaian data spasial antara peta pendaftaran analog lama dengan kondisi fisik lapangan riil (overlap), yang ditindaklanjuti melalui rekonstruksi batas dan konfirmasi arsip warkah ukur.';
     } else if (_containsAny(lower, ['medan', 'curam', 'bukit', 'jurang', 'akses', 'topografi'])) {
       expanded =
-          'Menghadapi medan topografi perbukitan yang cukup terjal di wilayah pengukuran Kabupaten Bondowoso, yang diatasi dengan pemilihan titik ikat yang aman dan penyesuaian rute jelajah survei.';
-    } else if (_containsAny(lower, ['server', 'jaringan', 'geokkp', 'kkp', 'down', 'sinkronisasi'])) {
+          'Menghadapi medan topografi yang cukup menantang di lokasi penugasan, yang diatasi dengan pemilihan titik ikat yang aman dan penyesuaian rute jelajah survei.';
+    } else if (_containsAny(lower, ['server', 'jaringan', 'geokkp', 'kkp', 'down', 'sinkronisasi', 'internet'])) {
       expanded =
-          'Sempat mengalami kelambatan sinkronisasi data spasial pada server aplikasi GeoKKP, yang disiasati dengan merapikan data gambar CAD secara offline terlebih dahulu sebelum proses upload.';
+          'Sempat mengalami kelambatan akses jaringan saat sinkronisasi data pada server sistem, yang disiasati dengan merapikan data secara offline terlebih dahulu sebelum proses unggah dilakukan.';
     }
-    // 2. Generic Technical Obstacle Rules
-    else if (_containsAny(lower, ['error', 'bug', 'crash', 'fail', 'gagal', 'exception', 'stacktrace'])) {
+    // Generic Technical & Hardware Obstacles
+    else if (_containsAny(lower, ['error', 'bug', 'crash', 'fail', 'gagal', 'exception'])) {
       expanded =
           'Menemui kendala teknis berupa kendala $clean, yang berhasil diatasi melalui penelusuran dokumentasi teknis dan konsultasi bersama mentor pembimbing.';
     } else if (_containsAny(lower, ['laptop', 'pc', 'perangkat', 'hang', 'komputer', 'spek', 'freeze'])) {
       expanded =
-          'Mengalami penurunan performa pada perangkat kerja saat memproses $clean, yang disiasati melalui optimalisasi manajemen aplikasi agar tidak mengganggu alur kerja.';
+          'Mengalami penurunan performa pada perangkat kerja saat memproses $clean, yang disiasati melalui optimalisasi manajemen memori dan aplikasi agar tidak mengganggu alur kerja.';
     } else if (_containsAny(lower, ['belum paham', 'kurang paham', 'bingung', 'sulit', 'kesulitan', 'alur'])) {
       expanded =
-          'Sempat mengalami sedikit kesulitan dalam memahami alur kerja $clean, namun berhasil dipahami dengan baik setelah berdiskusi langsung dengan pembimbing magang.';
+          'Sempat mengalami sedikit kendala dalam memahami alur kerja $clean, namun berhasil dipahami dengan baik setelah berdiskusi langsung dengan pembimbing magang.';
     } else if (_containsAny(lower, ['waktu', 'deadline', 'mepet', 'padat'])) {
       expanded =
           'Menghadapi tantangan tenggat waktu yang cukup padat terkait $clean, yang berhasil dituntaskan dengan menyusun prioritas pengerjaan secara teratur.';
     } else {
       expanded =
-          'Menghadapi sedikit kendala teknis terkait $clean, namun permasalahan tersebut berhasil ditangani dengan baik berkat koordinasi aktif bersama tim seksi survei pemetaan Kantor Pertanahan Kab. Bondowoso.';
+          'Menghadapi sedikit kendala teknis terkait $clean, namun permasalahan tersebut berhasil ditangani dengan baik berkat koordinasi aktif bersama tim teknis dan pembimbing lapangan.';
     }
 
     return expanded.endsWith('.') ? expanded : '$expanded.';
+  }
+
+  // --------------------------------------------------------------------------
+  // CLAUSE PROCESSORS: ACTIVITIES
+  // --------------------------------------------------------------------------
+  static String _expandSingleActivityClause(String clause, {required bool isFirst, required int totalClauses}) {
+    final lower = clause.toLowerCase();
+
+    // 1. Orientasi / Onboarding / Pembekalan / Apel
+    if (_containsAny(lower, ['orientasi', 'pembekalan', 'pengenalan program', 'onboarding', 'pengarahan awal', 'penerimaan magang'])) {
+      final program = _extractFormattedProgramName(clause);
+      if (program != null) {
+        return 'Mengikuti kegiatan orientasi $program yang mencakup pengenalan program, tata tertib, serta alur pelaksanaan magang';
+      }
+      return 'Mengikuti kegiatan orientasi pemagangan yang mencakup pengenalan lingkungan kerja, tata tertib instansi, serta alur pelaksanaan magang';
+    }
+
+    // 2. Instalasi / Konfigurasi Software / Persiapan Lingkungan Kerja
+    if (_containsAny(lower, ['install', 'instalasi', 'menginstall', 'setup', 'unduh', 'download', 'konfigurasi', 'penginstalan'])) {
+      final software = _extractSoftwareName(clause);
+      final hasMentor = _containsAny(lower, ['arahan', 'bimbingan', 'instruksi', 'pembimbing', 'mentor']);
+
+      if (hasMentor) {
+        return 'mengikuti arahan teknis dari pembimbing lapangan untuk melakukan instalasi dan konfigurasi perangkat lunak $software pada perangkat kerja sebagai persiapan penunjang tugas teknis survei dan pemetaan';
+      }
+      return 'melakukan instalasi dan konfigurasi perangkat lunak $software pada perangkat kerja sesuai standar penunjang tugas teknis survei dan pemetaan';
+    }
+
+    // 3. Cadastral Survey & Measurement (GNSS, Total Station, dsb.)
+    if (_containsAny(lower, ['gnss', 'gps', 'rtk', 'geodetik', 'cors', 'total station', 'ts', 'theodolite', 'poligon', 'terestrial'])) {
+      final loc = _extractLocation(clause);
+      final tool = _containsAny(lower, ['total station', 'ts', 'theodolite'])
+          ? 'Total Station serta pengukuran poligon batas bidang tanah'
+          : 'GNSS Geodetik metode RTK';
+
+      if (loc != null) {
+        return 'Melaksanakan pengukuran batas bidang tanah di $loc menggunakan $tool untuk memperoleh data koordinat yang akurat sesuai standar Kantor Pertanahan';
+      }
+      return 'Melaksanakan kegiatan pengukuran kadastral bidang tanah menggunakan $tool untuk memperoleh data koordinat batas yang akurat sesuai standar Kantor Pertanahan';
+    }
+
+    // 4. Pemasangan & Verifikasi Patok / Batas
+    if (_containsAny(lower, ['patok', 'tanda batas', 'batas tanah', 'pilar batas', 'pematokan', 'azas contradictoire'])) {
+      return 'Mengidentifikasi dan memverifikasi pemasangan tanda batas bidang tanah (patok) bersama pemilik tanah dan saksi batas perbatasan sesuai azas contradictoire delimitatie';
+    }
+
+    // 5. Digitasi, Pemetaan & AutoCAD / GIS (Non-Installation)
+    if (_containsAny(lower, ['autocad', 'cad', 'qgis', 'arcgis', 'gis', 'digitasi', 'peta bidang', 'peta pendaftaran'])) {
+      final software = _extractSoftwareName(clause);
+      return 'Melaksanakan digitasi dan penggambaran peta bidang tanah hasil survei lapangan menggunakan perangkat lunak $software sesuai standar sistem proyeksi TM-3°';
+    }
+
+    // 6. Gambar Ukur (GU) & Surat Ukur (SU) / PBT
+    if (_containsAny(lower, ['gambar ukur', 'gu', 'surat ukur', 'su', 'pbt', 'sketsa bidang'])) {
+      return 'Menyusun dan menyelesaikan Gambar Ukur (GU) serta menyiapkan bahan Peta Bidang Tanah (PBT) dan Surat Ukur (SU) secara rapi dan presisi';
+    }
+
+    // 7. GeoKKP / Administrasi Warkah
+    if (_containsAny(lower, ['geokkp', 'kkp', 'warkah', 'arsip warkah', 'input data', 'validasi data'])) {
+      return 'Melakukan penataan berkas warkah pertanahan serta validasi dan input data tekstual maupun spasial pada aplikasi GeoKKP Kantor Pertanahan';
+    }
+
+    // 8. PTSL
+    if (_containsAny(lower, ['ptsl', 'pendaftaran tanah sistematis'])) {
+      final loc = _extractLocation(clause);
+      if (loc != null) {
+        return 'Melaksanakan kegiatan survei pengukuran bidang tanah dalam program Pendaftaran Tanah Sistematis Lengkap (PTSL) di wilayah $loc';
+      }
+      return 'Melaksanakan kegiatan survei pengukuran bidang tanah dalam program Pendaftaran Tanah Sistematis Lengkap (PTSL) sesuai target seksi teknis';
+    }
+
+    // 9. Rapat / Briefing / Koordinasi
+    if (_containsAny(lower, ['meeting', 'rapat', 'diskusi', 'briefing', 'koordinasi', 'evaluasi'])) {
+      return 'Mengikuti agenda koordinasi dan briefing teknis bersama tim seksi pemetaan guna menyelaraskan rencana kerja dan target penugasan';
+    }
+
+    // 10. UI & Desain Antarmuka
+    if (_containsAny(lower, ['ui', 'antarmuka', 'figma', 'wireframe', 'desain ui'])) {
+      return 'Melakukan perancangan dan pengembangan antarmuka (UI) terkait $clause secara terstruktur sesuai standar desain industri';
+    }
+
+    // 11. Generic Verb Handling
+    if (_startsVerb(clause)) {
+      return 'Melaksanakan kegiatan $clause dengan penuh ketelitian dan berkoordinasi aktif bersama tim teknis di instansi penempatan';
+    }
+
+    return 'Melakukan kegiatan teknis terkait $clause secara cermat dan sistematis sesuai arahan pembimbing lapangan';
+  }
+
+  // --------------------------------------------------------------------------
+  // CLAUSE PROCESSORS: LEARNINGS
+  // --------------------------------------------------------------------------
+  static String _expandSingleLearningClause(String clause, {required bool isFirst, required int totalClauses}) {
+    final lower = clause.toLowerCase();
+
+    // 1. Orientasi / Onboarding / Pembekalan
+    if (_containsAny(lower, ['orientasi', 'pembekalan', 'pengenalan program', 'onboarding', 'pengarahan awal'])) {
+      final program = _extractFormattedProgramName(clause);
+      if (program != null) {
+        return 'Memahami struktur program, hak dan kewajiban peserta, serta standar operasional prosedur yang berlaku selama pelaksanaan $program';
+      }
+      return 'Memahami struktur organisasi, budaya kerja kedinasan, serta standar operasional prosedur yang berlaku selama pelaksanaan program pemagangan';
+    }
+
+    // 2. Instalasi / Konfigurasi Software / AutoCAD / GIS
+    if (_containsAny(lower, ['install', 'instalasi', 'menginstall', 'setup', 'konfigurasi', 'penginstalan'])) {
+      final software = _extractSoftwareName(clause);
+      if (!isFirst) {
+        return 'Di sisi teknis, memperoleh pemahaman mengenai kesiapan lingkungan kerja digital dan pengaturan awal perangkat lunak $software yang akan digunakan untuk pengolahan data spasial maupun penggambaran teknis di instansi penempatan';
+      }
+      return 'Memperoleh pemahaman mengenai kesiapan lingkungan kerja digital dan pengaturan awal perangkat lunak $software yang akan digunakan untuk pengolahan data spasial maupun penggambaran teknis di instansi penempatan';
+    }
+
+    // 3. Sistem Proyeksi TM-3 BPN
+    if (_containsAny(lower, ['tm-3', 'tm3', 'sistem proyeksi', 'proyeksi tm'])) {
+      return 'Memahami sistem proyeksi TM-3° yang menjadi standar resmi pemetaan kadastral di lingkungan Kementerian ATR/BPN';
+    }
+
+    // 4. Cadastral Survey & Measurement (GNSS, Total Station, dsb.)
+    if (_containsAny(lower, ['gnss', 'gps', 'rtk', 'geodetik', 'cors', 'total station', 'ts', 'theodolite', 'poligon', 'terestrial'])) {
+      return 'Menguasai teknik akuisisi data koordinat presisi tinggi menggunakan peralatan survei modern serta memahami toleransi ketelitian pemetaan kadastral pada sistem proyeksi TM-3° BPN';
+    }
+
+    // 4. Pemasangan & Verifikasi Patok / Batas
+    if (_containsAny(lower, ['patok', 'tanda batas', 'batas tanah', 'pilar batas', 'pematokan', 'azas contradictoire'])) {
+      return 'Memahami penerapan azas Contradictoire Delimitatie dalam penetapan tanda batas bidang tanah demi mencegah potensi sengketa batas kepemilikan';
+    }
+
+    // 5. Digitasi & AutoCAD / GIS (Non-Installation)
+    if (_containsAny(lower, ['autocad', 'cad', 'qgis', 'arcgis', 'gis', 'digitasi', 'peta bidang'])) {
+      final software = _extractSoftwareName(clause);
+      return 'Meningkatkan kemahiran dalam pengolahan data geospasial, pembuatan topologi bidang tanah bebas overlap, serta kartografi pertanahan digital menggunakan $software';
+    }
+
+    // 6. Gambar Ukur (GU) & Surat Ukur (SU) / PBT
+    if (_containsAny(lower, ['gambar ukur', 'gu', 'surat ukur', 'su', 'pbt'])) {
+      return 'Memahami tata cara penyusunan Gambar Ukur (GU) dan Surat Ukur (SU) yang sah sesuai ketentuan teknis pengukuran dan pemetaan pertanahan';
+    }
+
+    // 7. GeoKKP / Administrasi Warkah
+    if (_containsAny(lower, ['geokkp', 'kkp', 'warkah', 'arsip warkah', 'input data', 'validasi data'])) {
+      return 'Memahami alur integrasi data yuridis dan data fisik spasial pada sistem Komputerisasi Kantor Pertanahan (GeoKKP) serta manajemen penataan arsip warkah';
+    }
+
+    // 8. PTSL
+    if (_containsAny(lower, ['ptsl', 'pendaftaran tanah sistematis'])) {
+      return 'Mendapatkan wawasan mendalam mengenai alur kerja program Pendaftaran Tanah Sistematis Lengkap (PTSL) mulai dari pengukuran fisik batas hingga pembukuan hak';
+    }
+
+    // 9. Rapat / Koordinasi / Komunikasi
+    if (_containsAny(lower, ['meeting', 'rapat', 'diskusi', 'briefing', 'koordinasi', 'komunikasi'])) {
+      return 'Meningkatkan kemampuan koordinasi kerja tim, pemahaman target penyelesaian berkas, serta komunikasi profesional di lingkungan kerja kedinasan';
+    }
+
+    // 10. Generic
+    if (lower.startsWith('belajar ') || lower.startsWith('memahami ') || lower.startsWith('mempelajari ')) {
+      return 'Mendapatkan wawasan berharga dalam $clause serta memahami implementasinya secara nyata dalam lingkungan kerja instansi';
+    }
+
+    return 'Memperoleh pemahaman teknis dan pengalaman berharga mengenai $clause dalam mendukung efisiensi operasional di instansi penempatan';
+  }
+
+  // --------------------------------------------------------------------------
+  // SENTENCE JOINING HELPERS
+  // --------------------------------------------------------------------------
+  static String _joinActivitySentences(List<String> sentences) {
+    if (sentences.isEmpty) return '';
+    if (sentences.length == 1) {
+      final s = sentences.first.trim();
+      final capitalized = s.isNotEmpty ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
+      return capitalized.endsWith('.') ? capitalized : '$capitalized.';
+    }
+
+    final buffer = StringBuffer();
+    for (var i = 0; i < sentences.length; i++) {
+      var s = sentences[i].trim();
+      if (s.isEmpty) continue;
+
+      if (i == 0) {
+        s = '${s[0].toUpperCase()}${s.substring(1)}';
+        buffer.write(s);
+        if (!s.endsWith('.')) buffer.write('.');
+      } else {
+        buffer.write(' ');
+        if (!s.startsWith('Selain itu,') &&
+            !s.startsWith('Di samping itu,') &&
+            !s.startsWith('Kemudian,') &&
+            !s.startsWith('Selanjutnya,')) {
+          // Check lowercase lead
+          final leading = (i == 1) ? 'Selain itu, ' : 'Di samping itu, ';
+          final cleanContent = s.replaceFirst(RegExp(r'^(?:selain itu|kemudian|di samping itu),\s*', caseSensitive: false), '');
+          final lowerInitial = cleanContent.isNotEmpty
+              ? '${cleanContent[0].toLowerCase()}${cleanContent.substring(1)}'
+              : cleanContent;
+          buffer.write('$leading$lowerInitial');
+        } else {
+          buffer.write(s);
+        }
+        if (!buffer.toString().endsWith('.')) buffer.write('.');
+      }
+    }
+
+    return buffer.toString().trim();
+  }
+
+  static String _joinLearningSentences(List<String> sentences) {
+    if (sentences.isEmpty) return '';
+    if (sentences.length == 1) {
+      final s = sentences.first.trim();
+      final capitalized = s.isNotEmpty ? '${s[0].toUpperCase()}${s.substring(1)}' : s;
+      return capitalized.endsWith('.') ? capitalized : '$capitalized.';
+    }
+
+    final buffer = StringBuffer();
+    for (var i = 0; i < sentences.length; i++) {
+      var s = sentences[i].trim();
+      if (s.isEmpty) continue;
+
+      if (i == 0) {
+        s = '${s[0].toUpperCase()}${s.substring(1)}';
+        buffer.write(s);
+        if (!s.endsWith('.')) buffer.write('.');
+      } else {
+        buffer.write(' ');
+        if (!s.startsWith('Di sisi teknis,') &&
+            !s.startsWith('Selain itu,') &&
+            !s.startsWith('Di samping itu,')) {
+          final leading = s.toLowerCase().contains('teknis') || s.toLowerCase().contains('software')
+              ? 'Di sisi teknis, '
+              : 'Selain itu, ';
+          final cleanContent = s.replaceFirst(RegExp(r'^(?:selain itu|di sisi teknis|di samping itu),\s*', caseSensitive: false), '');
+          final lowerInitial = cleanContent.isNotEmpty
+              ? '${cleanContent[0].toLowerCase()}${cleanContent.substring(1)}'
+              : cleanContent;
+          buffer.write('$leading$lowerInitial');
+        } else {
+          buffer.write(s);
+        }
+        if (!buffer.toString().endsWith('.')) buffer.write('.');
+      }
+    }
+
+    return buffer.toString().trim();
+  }
+
+  // --------------------------------------------------------------------------
+  // CLAUSE SPLITTER & PARSER
+  // --------------------------------------------------------------------------
+  static List<String> _splitIntoClauses(String input) {
+    final rawLines = input
+        .split(RegExp(r'[\r\n]+'))
+        .map((e) => _cleanBulletOrNumber(e.trim()))
+        .where((e) => e.isNotEmpty)
+        .toList();
+
+    final clauses = <String>[];
+
+    for (final line in rawLines) {
+      // Split on conjunctions followed by verbal actions or distinct clauses
+      final compoundParts = line.split(RegExp(
+        r'(?:\s*;\s*|\s+(?:dan|serta|lalu|kemudian|setelah itu|sekaligus|di samping itu)\s+(?=(?:mengikuti|melakukan|melaksanakan|menginstall|install|menyiapkan|membuat|mengerjakan|mempelajari|memasang|mengukur|menghitung|mengecek|menditigasi|input|ploting|verifikasi|arahan|bimbingan|diskusi|rapat)\b))',
+        caseSensitive: false,
+      ));
+
+      if (compoundParts.length > 1) {
+        for (final p in compoundParts) {
+          final pt = p.trim();
+          if (pt.isNotEmpty) clauses.add(pt);
+        }
+      } else {
+        // Fallback: Check if line has "dan" / "serta" joining two substantial parts
+        final simpleSplit = line.split(RegExp(r'\s+(?:dan|serta)\s+', caseSensitive: false));
+        if (simpleSplit.length == 2 &&
+            simpleSplit[0].trim().split(' ').length >= 3 &&
+            simpleSplit[1].trim().split(' ').length >= 3 &&
+            (_containsActionOrSoftware(simpleSplit[1]))) {
+          clauses.add(simpleSplit[0].trim());
+          clauses.add(simpleSplit[1].trim());
+        } else {
+          clauses.add(line);
+        }
+      }
+    }
+
+    return clauses;
+  }
+
+  static bool _containsActionOrSoftware(String text) {
+    final lower = text.toLowerCase();
+    return _containsAny(lower, [
+      'mengikuti',
+      'melakukan',
+      'melaksanakan',
+      'install',
+      'instalasi',
+      'menginstall',
+      'autocad',
+      'cad',
+      'qgis',
+      'arcgis',
+      'geokkp',
+      'patok',
+      'ukur',
+      'survei',
+      'digitasi',
+      'warkah'
+    ]);
+  }
+
+  // --------------------------------------------------------------------------
+  // ENTITY & FORMATTING EXTRACTORS
+  // --------------------------------------------------------------------------
+  static String? _extractFormattedProgramName(String text) {
+    // Look for: pemagangan nasional batch ... angkatan ... tahun ...
+    final regex = RegExp(
+      r'(?:program\s+)?(pemagangan\s+nasional(?:\s+batch\s+[a-zA-Z0-9]+)?(?:\s+angkatan\s+[a-zA-Z0-9]+)?(?:\s+tahun\s+\d{4})?)',
+      caseSensitive: false,
+    );
+    final match = regex.firstMatch(text);
+    if (match != null) {
+      final rawName = match.group(1)!;
+      return _toTitleCaseWithAcronyms(rawName);
+    }
+
+    // Generic match for batch / angkatan
+    final altRegex = RegExp(
+      r'((?:pemagangan|magang|msib|kampus merdeka)(?:\s+[a-zA-Z0-9]+)*(?:\s+batch\s+[a-zA-Z0-9]+)?(?:\s+angkatan\s+[a-zA-Z0-9]+)?(?:\s+tahun\s+\d{4})?)',
+      caseSensitive: false,
+    );
+    final altMatch = altRegex.firstMatch(text);
+    if (altMatch != null) {
+      return _toTitleCaseWithAcronyms(altMatch.group(1)!);
+    }
+
+    return null;
+  }
+
+  static String _extractSoftwareName(String text) {
+    final lower = text.toLowerCase();
+    if (lower.contains('autocad') || lower.contains('cad')) return 'AutoCAD';
+    if (lower.contains('arcgis')) return 'ArcGIS';
+    if (lower.contains('qgis')) return 'QGIS';
+    if (lower.contains('geokkp') || lower.contains('kkp')) return 'GeoKKP';
+    if (lower.contains('global mapper')) return 'Global Mapper';
+    if (lower.contains('surfer')) return 'Surfer';
+    if (lower.contains('agisoft')) return 'Agisoft Metashape';
+    if (lower.contains('excel')) return 'Microsoft Excel';
+    if (lower.contains('word')) return 'Microsoft Word';
+    if (lower.contains('vscode') || lower.contains('visual studio code')) return 'Visual Studio Code';
+    if (lower.contains('flutter')) return 'Flutter';
+    if (lower.contains('python')) return 'Python';
+    return 'geospasial';
+  }
+
+  static String? _extractLocation(String text) {
+    final regex = RegExp(r'\b(desa|kecamatan|kabupaten|kec\.|kelurahan)\s+([a-zA-Z]+)', caseSensitive: false);
+    final match = regex.firstMatch(text);
+    if (match != null) {
+      final type = match.group(1)!;
+      final name = match.group(2)!;
+      final formattedType = type.toLowerCase() == 'kec.' ? 'Kecamatan' : '${type[0].toUpperCase()}${type.substring(1).toLowerCase()}';
+      final formattedName = '${name[0].toUpperCase()}${name.substring(1).toLowerCase()}';
+      return '$formattedType $formattedName';
+    }
+    return null;
+  }
+
+  static String _extractObstaclesFromInput(String text) {
+    final lower = text.toLowerCase();
+    if (_containsAny(lower, ['hujan', 'badai', 'cuaca'])) {
+      return expandObstacles('cuaca hujan');
+    }
+    if (_containsAny(lower, ['sinyal', 'gps', 'float', 'vegetasi'])) {
+      return expandObstacles('sinyal satelit');
+    }
+    if (_containsAny(lower, ['laptop', 'komputer', 'hang', 'lemot'])) {
+      return expandObstacles('perangkat komputer');
+    }
+    if (_containsAny(lower, ['server', 'jaringan', 'down'])) {
+      return expandObstacles('server jaringan');
+    }
+    return defaultNoObstacle;
+  }
+
+  static String _toTitleCaseWithAcronyms(String text) {
+    return text.split(RegExp(r'\s+')).map((word) {
+      final w = word.trim();
+      if (w.isEmpty) return '';
+      final lower = w.toLowerCase();
+
+      // Preserve special casing like 3A, 2, 2026
+      if (RegExp(r'^\d+[a-zA-Z]+$').hasMatch(w)) {
+        return w.toUpperCase();
+      }
+      if (RegExp(r'^\d+$').hasMatch(w)) {
+        return w;
+      }
+      if (lower == 'nasional') return 'Nasional';
+      if (lower == 'pemagangan') return 'Pemagangan';
+      if (lower == 'batch') return 'Batch';
+      if (lower == 'angkatan') return 'Angkatan';
+      if (lower == 'tahun') return 'Tahun';
+      if (lower == 'bpn') return 'BPN';
+      if (lower == 'atr') return 'ATR';
+
+      return '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}';
+    }).join(' ');
   }
 
   static String _cleanBulletOrNumber(String input) {
@@ -330,5 +632,18 @@ class SentenceExpander {
         lower.startsWith('mengerjakan') ||
         lower.startsWith('membuat') ||
         lower.startsWith('membantu');
+  }
+
+  static bool _isAlreadyFormalParagraph(String text) {
+    final words = text.split(RegExp(r'\s+'));
+    return words.length >= 22 &&
+        (text.startsWith('Melaksanakan') ||
+            text.startsWith('Mengikuti') ||
+            text.startsWith('Memahami') ||
+            text.startsWith('Memperoleh') ||
+            text.startsWith('Menyusun') ||
+            text.startsWith('Melakukan') ||
+            text.startsWith('Di sisi teknis,') ||
+            text.startsWith('Selain itu,'));
   }
 }
