@@ -23,5 +23,42 @@ void main() {
         ),
       );
     });
+
+    test('expands everyday morning apel + cadastral survey into mature sentences', () {
+      final act = SentenceExpander.expandActivities('apel pagi lalu ukur tanah di desa sekarputih');
+      expect(act, contains('apel pagi kedinasan'));
+      expect(act, contains('pengukuran batas bidang tanah di Desa Sekarputih'));
+
+      final learn = SentenceExpander.expandLearnings('', act);
+      expect(learn, contains('etika birokrasi kedinasan'));
+      expect(learn, contains('akuisisi data koordinat presisi tinggi'));
+    });
+
+    test('expands archiving warkah + excel data entry into mature sentences', () {
+      final act = SentenceExpander.expandActivities('membantu arsip warkah dan input data bidang tanah ke excel');
+      expect(act, contains('arsip warkah pertanahan'));
+      expect(act, contains('Microsoft Excel'));
+
+      final learn = SentenceExpander.expandLearnings('', act);
+      expect(learn, contains('tata kelola dokumen warkah'));
+      expect(learn, contains('basis data digital'));
+    });
+
+    test('expands arbitrary daily action using dynamic linguistic normalizer', () {
+      final act = SentenceExpander.expandActivities('mewawancarai warga mengenai riwayat kepemilikan tanah');
+      expect(act, contains('Melaksanakan kegiatan mewawancarai warga mengenai riwayat kepemilikan tanah'));
+      expect(act, contains('instansi penempatan'));
+
+      final learn = SentenceExpander.expandLearnings('tata cara wawancara riwayat tanah');
+      expect(learn, contains('Memperoleh pemahaman praktis serta wawasan berharga'));
+    });
+
+    test('cycles through varied no-obstacle messages with identical core meaning', () {
+      final msg1 = SentenceExpander.getNextNoObstacleMessage();
+      final msg2 = SentenceExpander.getNextNoObstacleMessage();
+      expect(msg1, isNot(equals(msg2)));
+      expect(msg1, contains('Tidak ada kendala dalam pelaksanaan kegiatan hari ini'));
+      expect(msg2, contains('kegiatan'));
+    });
   });
 }

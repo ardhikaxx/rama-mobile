@@ -145,8 +145,12 @@ void main() {
 
     test('expands obstacles and handles quick empty/tidak ada case', () {
       final emptyExpanded = SentenceExpander.expandObstacles('tidak ada');
-      expect(emptyExpanded, contains('Tidak ada kendala berarti'));
-      expect(emptyExpanded, contains('Bondowoso'));
+      expect(emptyExpanded, contains('Tidak ada kendala dalam pelaksanaan kegiatan hari ini'));
+
+      final variedMsg1 = SentenceExpander.getNextNoObstacleMessage();
+      final variedMsg2 = SentenceExpander.getNextNoObstacleMessage();
+      expect(variedMsg1, isNotEmpty);
+      expect(variedMsg2, isNotEmpty);
 
       final bugExpanded = SentenceExpander.expandObstacles('error build gradle');
       expect(bugExpanded, contains('error build gradle'));

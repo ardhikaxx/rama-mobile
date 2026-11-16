@@ -25,7 +25,7 @@ void main() {
     expect(find.text('Generator Logbook'), findsOneWidget);
     expect(find.text('Form Pengisian'), findsOneWidget);
     expect(find.text('Hasil & Pratinjau'), findsOneWidget);
-    expect(find.textContaining('Smart Fill'), findsOneWidget);
+    expect(find.text('Buat & Lihat Hasil Laporan'), findsOneWidget);
     expect(find.textContaining('Uraian Aktivitas'), findsWidgets);
     expect(find.textContaining('Pembelajaran'), findsWidgets);
   });
