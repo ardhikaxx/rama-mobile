@@ -4,16 +4,16 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../widgets/app_card.dart';
 
 class QuickActionsCard extends StatelessWidget {
-  final VoidCallback onCheckInTap;
-  final VoidCallback onCheckOutTap;
+  final VoidCallback onAttendanceTap;
   final VoidCallback onLogbookTap;
+  final VoidCallback onCalendarTap;
   final VoidCallback onHistoryTap;
 
   const QuickActionsCard({
     super.key,
-    required this.onCheckInTap,
-    required this.onCheckOutTap,
+    required this.onAttendanceTap,
     required this.onLogbookTap,
+    required this.onCalendarTap,
     required this.onHistoryTap,
   });
 
@@ -35,22 +35,24 @@ class QuickActionsCard extends StatelessWidget {
             Expanded(
               child: _buildActionButton(
                 context,
-                label: 'Absen Datang',
-                icon: LucideIcons.logIn,
+                label: 'Absensi Magang',
+                subtitle: 'Sebelum Pulang',
+                icon: LucideIcons.calendarCheck,
                 color: AppColors.primary,
                 bgColor: AppColors.primaryContainer,
-                onTap: onCheckInTap,
+                onTap: onAttendanceTap,
               ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: _buildActionButton(
                 context,
-                label: 'Absen Pulang',
-                icon: LucideIcons.logOut,
-                color: AppColors.primaryDark,
-                bgColor: const Color(0xFFE0E7FF),
-                onTap: onCheckOutTap,
+                label: 'Buat Logbook',
+                subtitle: 'Generator Cepat',
+                icon: LucideIcons.filePlus,
+                color: AppColors.success,
+                bgColor: AppColors.successLight,
+                onTap: onLogbookTap,
               ),
             ),
           ],
@@ -61,11 +63,12 @@ class QuickActionsCard extends StatelessWidget {
             Expanded(
               child: _buildActionButton(
                 context,
-                label: 'Buat Logbook',
-                icon: LucideIcons.filePlus,
-                color: AppColors.success,
-                bgColor: AppColors.successLight,
-                onTap: onLogbookTap,
+                label: 'Kalender Magang',
+                subtitle: 'Pantau Jadwal',
+                icon: LucideIcons.calendar,
+                color: const Color(0xFF8B5CF6),
+                bgColor: const Color(0xFFF3E8FF),
+                onTap: onCalendarTap,
               ),
             ),
             const SizedBox(width: 10),
@@ -73,6 +76,7 @@ class QuickActionsCard extends StatelessWidget {
               child: _buildActionButton(
                 context,
                 label: 'Lihat Riwayat',
+                subtitle: 'Rekap Aktivitas',
                 icon: LucideIcons.history,
                 color: AppColors.info,
                 bgColor: AppColors.infoLight,
@@ -88,6 +92,7 @@ class QuickActionsCard extends StatelessWidget {
   Widget _buildActionButton(
     BuildContext context, {
     required String label,
+    required String subtitle,
     required IconData icon,
     required Color color,
     required Color bgColor,
@@ -96,27 +101,42 @@ class QuickActionsCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       onTap: onTap,
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
               color: isDark ? color.withValues(alpha: 0.18) : bgColor,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: color, size: 19),
+            child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppColors.darkTextPrimary : AppColors.textPrimary,
-              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10.5,
+                    color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

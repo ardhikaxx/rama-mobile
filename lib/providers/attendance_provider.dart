@@ -5,34 +5,39 @@ import '../data/models/attendance_record.dart';
 import 'app_providers.dart';
 
 class AttendanceTodayState {
-  final AttendanceRecord? checkIn;
-  final AttendanceRecord? checkOut;
+  final AttendanceRecord? record;
   final bool isLoading;
   final String? errorMessage;
 
   const AttendanceTodayState({
-    this.checkIn,
-    this.checkOut,
+    this.record,
     this.isLoading = false,
     this.errorMessage,
   });
 
-  bool get hasCheckIn => checkIn != null;
-  bool get hasCheckOut => checkOut != null;
-  bool get isComplete => hasCheckIn && hasCheckOut;
+  bool get isRecorded => record != null;
+  bool get hasRecord => record != null;
+  AttendanceRecord? get checkOut => record;
+  AttendanceRecord? get checkIn => record;
+  bool get hasCheckIn => isRecorded;
+  bool get hasCheckOut => isRecorded;
+  bool get isComplete => isRecorded;
 
   AttendanceTodayState copyWith({
+    AttendanceRecord? record,
     AttendanceRecord? checkIn,
     AttendanceRecord? checkOut,
     bool? isLoading,
     String? errorMessage,
     bool clearError = false,
+    bool clearRecord = false,
     bool clearCheckIn = false,
     bool clearCheckOut = false,
   }) {
     return AttendanceTodayState(
-      checkIn: clearCheckIn ? null : (checkIn ?? this.checkIn),
-      checkOut: clearCheckOut ? null : (checkOut ?? this.checkOut),
+      record: (clearRecord || clearCheckIn || clearCheckOut)
+          ? null
+          : (record ?? checkOut ?? checkIn ?? this.record),
       isLoading: isLoading ?? this.isLoading,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
     );
@@ -53,17 +58,17 @@ class AttendanceNotifier extends StateNotifier<AttendanceTodayState> {
       final todayKey = DateFormatter.toDateKey(DateTime.now());
       final records = await repo.getRecordsByDate(todayKey);
 
-      AttendanceRecord? inRec;
-      AttendanceRecord? outRec;
-
+      AttendanceRecord? rec;
       for (final r in records) {
-        if (r.isCheckIn) inRec = r;
-        if (r.isCheckOut) outRec = r;
+        if (r.type == AppConstants.checkOut || r.type == AppConstants.attendance) {
+          rec = r;
+          break;
+        }
       }
+      rec ??= records.isNotEmpty ? records.first : null;
 
       state = AttendanceTodayState(
-        checkIn: inRec,
-        checkOut: outRec,
+        record: rec,
         isLoading: false,
       );
     } catch (e) {
@@ -72,7 +77,7 @@ class AttendanceNotifier extends StateNotifier<AttendanceTodayState> {
   }
 
   Future<void> recordAttendance({
-    required String type,
+    String type = AppConstants.checkOut,
     String status = AppConstants.statusHadir,
     String? notes,
   }) async {
@@ -90,15 +95,12 @@ class AttendanceNotifier extends StateNotifier<AttendanceTodayState> {
         notes: notes,
       );
 
-      // Cancel snooze notification for this type today
+      // Cancel snooze notification for attendance today
       final notif = _ref.read(notificationServiceProvider);
-      await notif.cancelSnoozeForType(type);
+      await notif.cancelSnoozeForType(AppConstants.reminderAttendance);
+      await notif.cancelSnoozeForType(AppConstants.reminderCheckOut);
 
-      if (type == AppConstants.checkIn) {
-        state = state.copyWith(checkIn: record, isLoading: false);
-      } else {
-        state = state.copyWith(checkOut: record, isLoading: false);
-      }
+      state = state.copyWith(record: record, isLoading: false);
     } catch (e) {
       state = state.copyWith(isLoading: false, errorMessage: e.toString());
       rethrow;

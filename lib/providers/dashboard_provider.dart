@@ -14,10 +14,8 @@ class DashboardData {
   final String greeting;
   final DateTime currentDate;
   final bool isTodayWorkday;
-  final bool checkInScheduled;
-  final AttendanceRecord? checkInRecord;
-  final bool checkOutScheduled;
-  final AttendanceRecord? checkOutRecord;
+  final bool attendanceScheduled;
+  final AttendanceRecord? attendanceRecord;
   final bool logbookScheduled;
   final LogbookEntry? todayLogbook;
   final double dailyProgress; // 0.0 - 1.0
@@ -34,10 +32,8 @@ class DashboardData {
     required this.greeting,
     required this.currentDate,
     required this.isTodayWorkday,
-    required this.checkInScheduled,
-    this.checkInRecord,
-    required this.checkOutScheduled,
-    this.checkOutRecord,
+    required this.attendanceScheduled,
+    this.attendanceRecord,
     required this.logbookScheduled,
     this.todayLogbook,
     required this.dailyProgress,
@@ -50,6 +46,12 @@ class DashboardData {
     this.nextReminder,
     this.nextReminderCountdown,
   });
+
+  // Backward-compatibility getters
+  bool get checkInScheduled => false;
+  AttendanceRecord? get checkInRecord => null;
+  bool get checkOutScheduled => attendanceScheduled;
+  AttendanceRecord? get checkOutRecord => attendanceRecord;
 }
 
 final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) async {
@@ -76,38 +78,35 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
   // Check which reminders are scheduled for today
   final isTodayWorkday = settings.activeDays.contains(weekday);
 
-  ReminderSchedule? checkInSchedule;
-  ReminderSchedule? checkOutSchedule;
+  ReminderSchedule? attendanceSchedule;
   ReminderSchedule? logbookSchedule;
 
   for (final s in schedules) {
-    if (s.type == AppConstants.reminderCheckIn) checkInSchedule = s;
-    if (s.type == AppConstants.reminderCheckOut) checkOutSchedule = s;
+    if (s.type == AppConstants.reminderAttendance || s.type == AppConstants.reminderCheckOut) {
+      attendanceSchedule = s;
+    }
     if (s.type == AppConstants.reminderLogbook) logbookSchedule = s;
   }
 
-  final checkInActive = isTodayWorkday && (checkInSchedule?.isEnabled ?? true);
-  final checkOutActive = isTodayWorkday && (checkOutSchedule?.isEnabled ?? true);
+  final attendanceActive = isTodayWorkday && (attendanceSchedule?.isEnabled ?? true);
   final logbookActive = isTodayWorkday && (logbookSchedule?.isEnabled ?? true);
 
-  AttendanceRecord? checkInRecord;
-  AttendanceRecord? checkOutRecord;
+  AttendanceRecord? attendanceRecord;
   for (final r in todayAttendance) {
-    if (r.isCheckIn) checkInRecord = r;
-    if (r.isCheckOut) checkOutRecord = r;
+    if (r.type == AppConstants.checkOut || r.type == AppConstants.attendance) {
+      attendanceRecord = r;
+      break;
+    }
   }
+  attendanceRecord ??= todayAttendance.isNotEmpty ? todayAttendance.first : null;
 
-  // Calculate Progress
+  // Calculate Progress: 2 daily obligations (Absensi Magang + Logbook Harian)
   int totalTasks = 0;
   int completedTasks = 0;
 
-  if (checkInActive) {
+  if (attendanceActive) {
     totalTasks++;
-    if (checkInRecord != null) completedTasks++;
-  }
-  if (checkOutActive) {
-    totalTasks++;
-    if (checkOutRecord != null) completedTasks++;
+    if (attendanceRecord != null) completedTasks++;
   }
   if (logbookActive) {
     totalTasks++;
@@ -131,17 +130,9 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
     endDate: weekEndDate,
   );
 
-  // Complete days = dates with both check_in and check_out
-  final attendanceByDate = <String, Set<String>>{};
-  for (final r in weekAttendance) {
-    attendanceByDate.putIfAbsent(r.date, () => <String>{}).add(r.type);
-  }
-  int completeDaysCount = 0;
-  for (final types in attendanceByDate.values) {
-    if (types.contains(AppConstants.checkIn) && types.contains(AppConstants.checkOut)) {
-      completeDaysCount++;
-    }
-  }
+  // Complete days = dates with attendance record
+  final uniqueAttendanceDates = weekAttendance.map((e) => e.date).toSet();
+  final completeDaysCount = uniqueAttendanceDates.length;
 
   // Workdays recorded = unique dates with any attendance or logbook
   final allRecords = await attendanceRepo.getAllRecords();
@@ -161,12 +152,10 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
     if (settings.activeDays.contains(d)) {
       final targetDate = monday.add(Duration(days: d - 1));
       final dateKey = DateFormatter.toDateKey(targetDate);
-      final hasIn = weekAttendance.any((a) => a.date == dateKey && a.isCheckIn);
-      final hasOut = weekAttendance.any((a) => a.date == dateKey && a.isCheckOut);
+      final hasAtt = weekAttendance.any((a) => a.date == dateKey);
       final hasLog = weekLogbooks.any((l) => l.date == dateKey);
 
-      if (!hasIn) pendingWeekTasks++;
-      if (!hasOut) pendingWeekTasks++;
+      if (!hasAtt) pendingWeekTasks++;
       if (!hasLog) pendingWeekTasks++;
     }
   }
@@ -178,17 +167,13 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
   if (isTodayWorkday) {
     final candidateSchedules = <ReminderSchedule>[];
 
-    if (checkInActive && checkInRecord == null && checkInSchedule != null) {
-      candidateSchedules.add(checkInSchedule);
-    }
-    if (checkOutActive && checkOutRecord == null && checkOutSchedule != null) {
-      candidateSchedules.add(checkOutSchedule);
+    if (attendanceActive && attendanceRecord == null && attendanceSchedule != null) {
+      candidateSchedules.add(attendanceSchedule);
     }
     if (logbookActive && todayLogbook == null && logbookSchedule != null) {
       candidateSchedules.add(logbookSchedule);
     }
 
-    // Filter to find the earliest one today that hasn't passed, or the next one
     final nowMinutes = now.hour * 60 + now.minute;
     candidateSchedules.sort((a, b) {
       final aMin = a.hour * 60 + a.minute;
@@ -205,7 +190,6 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
       }
     }
 
-    // If all today have passed but some are still unfinished, show the next earliest
     if (nextReminder == null && candidateSchedules.isNotEmpty) {
       nextReminder = candidateSchedules.first;
       nextReminderCountdown = 'Lewat jadwal (${nextReminder.time})';
@@ -216,10 +200,8 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
     greeting: DateFormatter.getGreeting(now),
     currentDate: now,
     isTodayWorkday: isTodayWorkday,
-    checkInScheduled: checkInActive,
-    checkInRecord: checkInRecord,
-    checkOutScheduled: checkOutActive,
-    checkOutRecord: checkOutRecord,
+    attendanceScheduled: attendanceActive,
+    attendanceRecord: attendanceRecord,
     logbookScheduled: logbookActive,
     todayLogbook: todayLogbook,
     dailyProgress: progress,

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/constants/app_constants.dart';
 import '../../../../providers/attendance_provider.dart';
 import '../../../../providers/dashboard_provider.dart';
 import '../../../../providers/logbook_provider.dart';
 import '../attendance/widgets/attendance_dialog.dart';
+import '../calendar/calendar_screen.dart';
 import '../settings/reminder_settings_screen.dart';
 import 'widgets/daily_progress_card.dart';
 import 'widgets/greeting_header.dart';
@@ -62,16 +64,13 @@ class DashboardScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 18),
 
-                  // Today's Status Card
+                  // Today's Status Card (Absensi Magang Sebelum Pulang & Logbook)
                   MainStatusCard(
-                    checkInScheduled: data.checkInScheduled,
-                    checkInRecord: data.checkInRecord,
-                    checkOutScheduled: data.checkOutScheduled,
-                    checkOutRecord: data.checkOutRecord,
+                    attendanceScheduled: data.attendanceScheduled,
+                    attendanceRecord: data.attendanceRecord,
                     logbookScheduled: data.logbookScheduled,
                     todayLogbook: data.todayLogbook,
-                    onCheckInTap: () => _handleCheckIn(context, ref, data.checkInRecord != null),
-                    onCheckOutTap: () => _handleCheckOut(context, ref, data.checkOutRecord != null),
+                    onAttendanceTap: () => _handleAttendance(context, ref, data.attendanceRecord != null),
                     onLogbookTap: () => onNavigateTab(2), // Tab Logbook
                   ),
                   const SizedBox(height: 18),
@@ -110,9 +109,13 @@ class DashboardScreen extends ConsumerWidget {
 
                   // Quick Actions Card
                   QuickActionsCard(
-                    onCheckInTap: () => _handleCheckIn(context, ref, data.checkInRecord != null),
-                    onCheckOutTap: () => _handleCheckOut(context, ref, data.checkOutRecord != null),
+                    onAttendanceTap: () => _handleAttendance(context, ref, data.attendanceRecord != null),
                     onLogbookTap: () => onNavigateTab(2),
+                    onCalendarTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const CalendarScreen()),
+                      );
+                    },
                     onHistoryTap: () => onNavigateTab(3),
                   ),
                   const SizedBox(height: 95),
@@ -125,11 +128,11 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  void _handleCheckIn(BuildContext context, WidgetRef ref, bool alreadyDone) {
+  void _handleAttendance(BuildContext context, WidgetRef ref, bool alreadyDone) {
     if (alreadyDone) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Absensi datang hari ini sudah tercatat. Buka tab Absensi untuk koreksi data.'),
+          content: Text('Absensi magang hari ini sudah tercatat. Buka tab Presensi untuk koreksi data.'),
         ),
       );
       onNavigateTab(1); // navigate to Attendance tab
@@ -138,54 +141,17 @@ class DashboardScreen extends ConsumerWidget {
 
     AttendanceDialog.show(
       context,
-      type: 'check_in',
+      type: AppConstants.attendance,
       onConfirmed: (status, notes) async {
         try {
           await ref.read(attendanceProvider.notifier).recordAttendance(
-            type: 'check_in',
+            type: AppConstants.attendance,
             status: status,
             notes: notes,
           );
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Absensi datang berhasil dicatat!')),
-            );
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(e.toString())),
-            );
-          }
-        }
-      },
-    );
-  }
-
-  void _handleCheckOut(BuildContext context, WidgetRef ref, bool alreadyDone) {
-    if (alreadyDone) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Absensi pulang hari ini sudah tercatat. Buka tab Absensi untuk koreksi data.'),
-        ),
-      );
-      onNavigateTab(1); // navigate to Attendance tab
-      return;
-    }
-
-    AttendanceDialog.show(
-      context,
-      type: 'check_out',
-      onConfirmed: (status, notes) async {
-        try {
-          await ref.read(attendanceProvider.notifier).recordAttendance(
-            type: 'check_out',
-            status: status,
-            notes: notes,
-          );
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Absensi pulang berhasil dicatat!')),
+              const SnackBar(content: Text('Absensi magang sebelum pulang berhasil dicatat!')),
             );
           }
         } catch (e) {

@@ -8,26 +8,20 @@ import '../../../widgets/app_card.dart';
 import '../../../widgets/status_badge.dart';
 
 class MainStatusCard extends StatelessWidget {
-  final bool checkInScheduled;
-  final AttendanceRecord? checkInRecord;
-  final bool checkOutScheduled;
-  final AttendanceRecord? checkOutRecord;
+  final bool attendanceScheduled;
+  final AttendanceRecord? attendanceRecord;
   final bool logbookScheduled;
   final LogbookEntry? todayLogbook;
-  final VoidCallback onCheckInTap;
-  final VoidCallback onCheckOutTap;
+  final VoidCallback onAttendanceTap;
   final VoidCallback onLogbookTap;
 
   const MainStatusCard({
     super.key,
-    required this.checkInScheduled,
-    this.checkInRecord,
-    required this.checkOutScheduled,
-    this.checkOutRecord,
+    required this.attendanceScheduled,
+    this.attendanceRecord,
     required this.logbookScheduled,
     this.todayLogbook,
-    required this.onCheckInTap,
-    required this.onCheckOutTap,
+    required this.onAttendanceTap,
     required this.onLogbookTap,
   });
 
@@ -49,35 +43,23 @@ class MainStatusCard extends StatelessWidget {
             Expanded(
               child: _buildItemCard(
                 context,
-                title: 'Absen Datang',
-                icon: LucideIcons.logIn,
-                isScheduled: checkInScheduled,
-                isDone: checkInRecord != null,
-                detailText: checkInRecord != null
-                    ? DateFormatter.formatTime(checkInRecord!.timestamp)
+                title: 'Absensi Magang',
+                subtitle: 'Sebelum Pulang',
+                icon: LucideIcons.calendarCheck,
+                isScheduled: attendanceScheduled,
+                isDone: attendanceRecord != null,
+                detailText: attendanceRecord != null
+                    ? '${DateFormatter.formatTime(attendanceRecord!.timestamp)} (${attendanceRecord!.statusDisplayName})'
                     : null,
-                onTap: onCheckInTap,
+                onTap: onAttendanceTap,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 12),
             Expanded(
               child: _buildItemCard(
                 context,
-                title: 'Absen Pulang',
-                icon: LucideIcons.logOut,
-                isScheduled: checkOutScheduled,
-                isDone: checkOutRecord != null,
-                detailText: checkOutRecord != null
-                    ? DateFormatter.formatTime(checkOutRecord!.timestamp)
-                    : null,
-                onTap: onCheckOutTap,
-              ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _buildItemCard(
-                context,
-                title: 'Logbook',
+                title: 'Logbook Harian',
+                subtitle: 'Laporan Magang',
                 icon: LucideIcons.bookOpen,
                 isScheduled: logbookScheduled,
                 isDone: todayLogbook != null,
@@ -96,6 +78,7 @@ class MainStatusCard extends StatelessWidget {
   Widget _buildItemCard(
     BuildContext context, {
     required String title,
+    required String subtitle,
     required IconData icon,
     required bool isScheduled,
     required bool isDone,
@@ -122,22 +105,22 @@ class MainStatusCard extends StatelessWidget {
     } else {
       iconColor = AppColors.warning;
       iconBg = AppColors.warningLight;
-      statusText = 'Belum';
+      statusText = 'Belum Dicatat';
       variant = BadgeVariant.warning;
     }
 
     return AppCard(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       onTap: onTap,
       child: Column(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: iconBg,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, color: iconColor, size: 20),
+            child: Icon(icon, color: iconColor, size: 24),
           ),
           const SizedBox(height: 10),
           Text(
@@ -146,16 +129,25 @@ class MainStatusCard extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 12.5,
-              fontWeight: FontWeight.w600,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 11,
+              color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 10),
           StatusBadge(
             label: statusText,
             variant: variant,
-            fontSize: 10.5,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            fontSize: 11,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           ),
         ],
       ),

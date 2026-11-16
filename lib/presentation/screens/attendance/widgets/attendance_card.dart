@@ -29,11 +29,10 @@ class AttendanceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final isCheckIn = type == AppConstants.checkIn;
     final isDone = record != null;
 
-    final title = isCheckIn ? 'Absensi Datang' : 'Absensi Pulang';
-    final scheduledTime = schedule?.time ?? (isCheckIn ? '07:30' : '16:00');
+    const title = 'Absensi Magang';
+    final scheduledTime = schedule?.time ?? '16:30';
     final actualTime = isDone ? DateFormatter.formatTime(record!.timestamp) : null;
 
     BadgeVariant variant;
@@ -78,14 +77,12 @@ class AttendanceCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: isCheckIn
-                            ? AppColors.primaryContainer
-                            : const Color(0xFFE0E7FF),
+                        color: AppColors.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Icon(
-                        isCheckIn ? LucideIcons.logIn : LucideIcons.logOut,
-                        color: isCheckIn ? AppColors.primary : AppColors.primaryDark,
+                      child: const Icon(
+                        LucideIcons.calendarCheck,
+                        color: AppColors.primary,
                         size: 22,
                       ),
                     ),
@@ -204,7 +201,7 @@ class AttendanceCard extends StatelessWidget {
               icon: const Icon(LucideIcons.check, size: 18),
               label: Text('Konfirmasi $title'),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isCheckIn ? AppColors.primary : AppColors.primaryDark,
+                backgroundColor: AppColors.primary,
               ),
             )
           else

@@ -18,6 +18,7 @@ class AppConstants {
   // Attendance Types
   static const String checkIn = 'check_in';
   static const String checkOut = 'check_out';
+  static const String attendance = 'check_out'; // Single daily attendance before leaving
 
   // Attendance Statuses
   static const String statusHadir = 'hadir';
@@ -34,6 +35,7 @@ class AppConstants {
   // Reminder Types
   static const String reminderCheckIn = 'check_in';
   static const String reminderCheckOut = 'check_out';
+  static const String reminderAttendance = 'check_out';
   static const String reminderLogbook = 'logbook';
 
   // Days of Week (ISO: 1 = Senin, 7 = Minggu)

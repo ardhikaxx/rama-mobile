@@ -22,9 +22,9 @@ class AttendanceRecord {
   });
 
   bool get isCheckIn => type == AppConstants.checkIn;
-  bool get isCheckOut => type == AppConstants.checkOut;
+  bool get isCheckOut => type == AppConstants.checkOut || type == AppConstants.attendance;
 
-  String get typeDisplayName => isCheckIn ? 'Absensi Datang' : 'Absensi Pulang';
+  String get typeDisplayName => 'Absensi Magang (Sebelum Pulang)';
 
   String get statusDisplayName {
     switch (status) {

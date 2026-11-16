@@ -211,25 +211,14 @@ class CalendarScreen extends ConsumerWidget {
           ),
           const Divider(height: 20),
 
-          // Check-in status
+          // Attendance status (Sebelum Pulang)
           _buildDayItemRow(
-            icon: LucideIcons.logIn,
-            label: 'Absensi Datang',
-            value: detail.checkIn != null
-                ? '${DateFormatter.formatTime(detail.checkIn!.timestamp)} (${detail.checkIn!.statusDisplayName})'
+            icon: LucideIcons.calendarCheck,
+            label: 'Absensi Magang (Sebelum Pulang)',
+            value: detail.attendance != null
+                ? '${DateFormatter.formatTime(detail.attendance!.timestamp)} (${detail.attendance!.statusDisplayName})'
                 : 'Belum Dicatat',
-            isDone: detail.checkIn != null,
-          ),
-          const SizedBox(height: 10),
-
-          // Check-out status
-          _buildDayItemRow(
-            icon: LucideIcons.logOut,
-            label: 'Absensi Pulang',
-            value: detail.checkOut != null
-                ? '${DateFormatter.formatTime(detail.checkOut!.timestamp)} (${detail.checkOut!.statusDisplayName})'
-                : 'Belum Dicatat',
-            isDone: detail.checkOut != null,
+            isDone: detail.attendance != null,
           ),
           const SizedBox(height: 10),
 

@@ -26,11 +26,12 @@ class AttendanceScreen extends ConsumerWidget {
     final now = DateTime.now();
     final isWorkday = settings?.activeDays.contains(now.weekday) ?? true;
 
-    ReminderSchedule? checkInSchedule;
-    ReminderSchedule? checkOutSchedule;
+    ReminderSchedule? attendanceSchedule;
     for (final s in schedules) {
-      if (s.type == AppConstants.reminderCheckIn) checkInSchedule = s;
-      if (s.type == AppConstants.reminderCheckOut) checkOutSchedule = s;
+      if (s.type == AppConstants.reminderAttendance || s.type == AppConstants.reminderCheckOut) {
+        attendanceSchedule = s;
+        break;
+      }
     }
 
     return Scaffold(
@@ -101,31 +102,19 @@ class AttendanceScreen extends ConsumerWidget {
 
               const SizedBox(height: 16),
 
-              // Attendance Check-In Card
+              // Single Daily Attendance Card (Sebelum Pulang)
               AttendanceCard(
-                type: AppConstants.checkIn,
-                schedule: checkInSchedule,
-                record: attendanceState.checkIn,
+                type: AppConstants.attendance,
+                schedule: attendanceSchedule,
+                record: attendanceState.record,
                 isWorkday: isWorkday,
-                onConfirm: () => _handleRecord(context, ref, AppConstants.checkIn),
-                onEdit: () => _handleEdit(context, ref, attendanceState.checkIn!),
+                onConfirm: () => _handleRecord(context, ref, AppConstants.attendance),
+                onEdit: () => _handleEdit(context, ref, attendanceState.record!),
               ),
 
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
 
-              // Attendance Check-Out Card
-              AttendanceCard(
-                type: AppConstants.checkOut,
-                schedule: checkOutSchedule,
-                record: attendanceState.checkOut,
-                isWorkday: isWorkday,
-                onConfirm: () => _handleRecord(context, ref, AppConstants.checkOut),
-                onEdit: () => _handleEdit(context, ref, attendanceState.checkOut!),
-              ),
-
-              const SizedBox(height: 20),
-
-              // Information / Privacy Notice Card
+              // Policy Info Banner
               AppCard(
                 padding: const EdgeInsets.all(14),
                 color: isDark ? AppColors.darkSurface : const Color(0xFFF8FAFC),
@@ -136,14 +125,14 @@ class AttendanceScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Icon(
-                      LucideIcons.info,
-                      color: AppColors.info,
+                      LucideIcons.clock,
+                      color: AppColors.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Aplikasi RAMA berfungsi sebagai alat pencatatan mandiri dan pengingat pribadi magang Anda. Tidak memerlukan pelacak GPS atau integrasi server pihak ketiga. Semua data tersimpan aman di perangkat Anda.',
+                        'Konfirmasi absensi magang dilakukan satu kali setiap hari setelah seluruh aktivitas kerja magang selesai sebelum pulang. Waktu kehadiran Anda akan tercatat otomatis dari perangkat dan tersimpan offline secara permanen.',
                         style: TextStyle(
                           fontSize: 12,
                           color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
@@ -176,10 +165,9 @@ class AttendanceScreen extends ConsumerWidget {
           );
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Absensi ${type == AppConstants.checkIn ? "Datang" : "Pulang"} berhasil dicatat!',
-                ),
+              const SnackBar(
+                content: Text('Absensi magang sebelum pulang berhasil dicatat!'),
+                backgroundColor: AppColors.success,
               ),
             );
           }
@@ -209,7 +197,10 @@ class AttendanceScreen extends ConsumerWidget {
           await ref.read(attendanceProvider.notifier).updateRecord(updated);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Data absensi berhasil diperbarui!')),
+              const SnackBar(
+                content: Text('Data absensi magang berhasil diperbarui!'),
+                backgroundColor: AppColors.success,
+              ),
             );
           }
         } catch (e) {

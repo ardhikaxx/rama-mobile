@@ -17,8 +17,7 @@ class DayDetail {
   final DateTime date;
   final String dateKey;
   final bool isWorkday;
-  final AttendanceRecord? checkIn;
-  final AttendanceRecord? checkOut;
+  final AttendanceRecord? attendance;
   final LogbookEntry? logbook;
   final DayActivityStatus status;
 
@@ -26,11 +25,13 @@ class DayDetail {
     required this.date,
     required this.dateKey,
     required this.isWorkday,
-    this.checkIn,
-    this.checkOut,
+    this.attendance,
     this.logbook,
     required this.status,
   });
+
+  AttendanceRecord? get checkOut => attendance;
+  AttendanceRecord? get checkIn => attendance;
 }
 
 class CalendarState {
@@ -132,24 +133,22 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
         final dateKey = DateFormatter.toDateKey(cur);
         final isWorkday = activeDays.contains(cur.weekday);
         final atts = attendanceMap[dateKey];
-        final inRec = atts?[AppConstants.checkIn];
-        final outRec = atts?[AppConstants.checkOut];
+        AttendanceRecord? attRecord = atts?[AppConstants.checkOut] ?? atts?[AppConstants.attendance];
+        attRecord ??= (atts?.isNotEmpty ?? false) ? atts!.values.first : null;
         final log = logbookMap[dateKey];
 
         DayActivityStatus status;
         if (!isWorkday) {
           status = DayActivityStatus.notScheduled;
         } else {
-          // Check if there's special attendance status like izin or sakit
-          final hasIzinOrSakit =
-              (inRec != null && (inRec.status == AppConstants.statusIzin || inRec.status == AppConstants.statusSakit)) ||
-              (outRec != null && (outRec.status == AppConstants.statusIzin || outRec.status == AppConstants.statusSakit));
+          final hasIzinOrSakit = attRecord != null &&
+              (attRecord.status == AppConstants.statusIzin || attRecord.status == AppConstants.statusSakit);
 
           if (hasIzinOrSakit) {
             status = DayActivityStatus.unfulfilled;
-          } else if (inRec != null && outRec != null && log != null) {
+          } else if (attRecord != null && log != null) {
             status = DayActivityStatus.completed;
-          } else if (inRec != null || outRec != null || log != null) {
+          } else if (attRecord != null || log != null) {
             status = DayActivityStatus.partial;
           } else {
             // No records yet: if in the past, unfulfilled; if today or future, not scheduled / pending
@@ -165,8 +164,7 @@ class CalendarNotifier extends StateNotifier<CalendarState> {
           date: cur,
           dateKey: dateKey,
           isWorkday: isWorkday,
-          checkIn: inRec,
-          checkOut: outRec,
+          attendance: attRecord,
           logbook: log,
           status: status,
         );

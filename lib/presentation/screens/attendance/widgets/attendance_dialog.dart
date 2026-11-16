@@ -62,7 +62,7 @@ class _AttendanceDialogState extends State<AttendanceDialog> {
     final isCheckIn = widget.type == AppConstants.checkIn;
     final isEditing = widget.initialRecord != null;
 
-    final typeLabel = isCheckIn ? 'Absensi Datang' : 'Absensi Pulang';
+    final typeLabel = isCheckIn ? 'Absensi Datang' : 'Absensi Magang (Sebelum Pulang)';
     final timeStr = isEditing
         ? DateFormatter.formatTime(widget.initialRecord!.timestamp)
         : DateFormatter.formatTime(_now);

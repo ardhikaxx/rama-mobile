@@ -34,10 +34,10 @@ class ReminderSchedule {
 
   String get typeDisplayName {
     switch (type) {
+      case AppConstants.reminderAttendance:
+        return 'Absensi Magang (Sebelum Pulang)';
       case AppConstants.reminderCheckIn:
         return 'Absensi Datang';
-      case AppConstants.reminderCheckOut:
-        return 'Absensi Pulang';
       case AppConstants.reminderLogbook:
         return 'Pengisian Logbook';
       default:
@@ -103,20 +103,12 @@ class ReminderSchedule {
   static List<ReminderSchedule> defaultSchedules() {
     return [
       const ReminderSchedule(
-        type: AppConstants.reminderCheckIn,
-        time: '07:30',
+        type: AppConstants.reminderAttendance,
+        time: '16:30',
         isEnabled: true,
         activeDays: [1, 2, 3, 4, 5],
-        title: 'Waktunya Absensi Datang',
-        message: 'Jangan lupa catat kehadiran magangmu hari ini.',
-      ),
-      const ReminderSchedule(
-        type: AppConstants.reminderCheckOut,
-        time: '16:00',
-        isEnabled: true,
-        activeDays: [1, 2, 3, 4, 5],
-        title: 'Waktunya Absensi Pulang',
-        message: 'Pastikan absensi pulangmu sudah dicatat sebelum meninggalkan tempat magang.',
+        title: 'Waktunya Absensi Magang',
+        message: 'Konfirmasi kehadiran magangmu sebelum pulang hari ini.',
       ),
       const ReminderSchedule(
         type: AppConstants.reminderLogbook,

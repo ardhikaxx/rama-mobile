@@ -46,13 +46,13 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
     final settings = ref.watch(settingsProvider).valueOrNull;
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
-    ReminderSchedule? checkInSchedule;
-    ReminderSchedule? checkOutSchedule;
+    ReminderSchedule? attendanceSchedule;
     ReminderSchedule? logbookSchedule;
 
     for (final s in schedules) {
-      if (s.type == AppConstants.reminderCheckIn) checkInSchedule = s;
-      if (s.type == AppConstants.reminderCheckOut) checkOutSchedule = s;
+      if (s.type == AppConstants.reminderAttendance || s.type == AppConstants.reminderCheckOut) {
+        attendanceSchedule = s;
+      }
       if (s.type == AppConstants.reminderLogbook) logbookSchedule = s;
     }
 
@@ -86,31 +86,19 @@ class _ReminderSettingsScreenState extends ConsumerState<ReminderSettingsScreen>
             ),
             const SizedBox(height: 16),
 
-            // 1. Check-In Reminder
-            if (checkInSchedule != null)
+            // 1. Attendance Reminder (Sebelum Pulang)
+            if (attendanceSchedule != null)
               _buildReminderCard(
-                schedule: checkInSchedule,
-                icon: LucideIcons.logIn,
+                schedule: attendanceSchedule,
+                icon: LucideIcons.calendarCheck,
                 color: AppColors.primary,
-                onToggle: (val) => reminderNotifier.toggleSchedule(checkInSchedule!.type, val),
-                onPickTime: () => _pickTimeForSchedule(checkInSchedule!),
-                onToggleDay: (day) => _toggleDayForSchedule(checkInSchedule!, day),
+                onToggle: (val) => reminderNotifier.toggleSchedule(attendanceSchedule!.type, val),
+                onPickTime: () => _pickTimeForSchedule(attendanceSchedule!),
+                onToggleDay: (day) => _toggleDayForSchedule(attendanceSchedule!, day),
               ),
             const SizedBox(height: 14),
 
-            // 2. Check-Out Reminder
-            if (checkOutSchedule != null)
-              _buildReminderCard(
-                schedule: checkOutSchedule,
-                icon: LucideIcons.logOut,
-                color: AppColors.primaryDark,
-                onToggle: (val) => reminderNotifier.toggleSchedule(checkOutSchedule!.type, val),
-                onPickTime: () => _pickTimeForSchedule(checkOutSchedule!),
-                onToggleDay: (day) => _toggleDayForSchedule(checkOutSchedule!, day),
-              ),
-            const SizedBox(height: 14),
-
-            // 3. Logbook Reminder
+            // 2. Logbook Reminder
             if (logbookSchedule != null)
               _buildReminderCard(
                 schedule: logbookSchedule,

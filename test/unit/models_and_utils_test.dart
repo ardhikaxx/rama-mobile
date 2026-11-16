@@ -113,12 +113,11 @@ void main() {
       expect(reconstructed.notes, equals('Tepat waktu'));
     });
 
-    test('ReminderSchedule default schedules have 3 items', () {
+    test('ReminderSchedule default schedules have 2 items', () {
       final defaults = ReminderSchedule.defaultSchedules();
-      expect(defaults.length, equals(3));
-      expect(defaults[0].type, equals('check_in'));
-      expect(defaults[1].type, equals('check_out'));
-      expect(defaults[2].type, equals('logbook'));
+      expect(defaults.length, equals(2));
+      expect(defaults[0].type, equals('check_out'));
+      expect(defaults[1].type, equals('logbook'));
     });
   });
 
