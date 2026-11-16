@@ -478,6 +478,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
                           foregroundColor: AppColors.onPrimary,
+                          minimumSize: Size.zero,
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                         ),

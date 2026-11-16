@@ -116,21 +116,20 @@ class LogbookPreviewCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Row(
-                    children: [
-                      Icon(LucideIcons.fileCheck2, size: 18, color: AppColors.primary),
-                      SizedBox(width: 8),
-                      Text(
-                        'Aksi & Simpan Logbook',
-                        style: TextStyle(
-                          fontSize: 14.5,
-                          fontWeight: FontWeight.w700,
-                        ),
+                  const Icon(LucideIcons.fileCheck2, size: 18, color: AppColors.primary),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Aksi & Simpan Logbook',
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
                       ),
-                    ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   StatusBadge(label: statusLabel, variant: variant),
                 ],
               ),
@@ -141,27 +140,27 @@ class LogbookPreviewCard extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    flex: 3,
                     child: OutlinedButton.icon(
                       onPressed: onCopyAll,
-                      icon: const Icon(LucideIcons.copy, size: 16),
-                      label: const Text('Salin Semua (Format Lengkap)', style: TextStyle(fontSize: 12)),
+                      icon: const Icon(LucideIcons.copy, size: 15),
+                      label: const Text('Salin Semua', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                       style: OutlinedButton.styleFrom(
                         minimumSize: const Size.fromHeight(44),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                       ),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    flex: 2,
                     child: ElevatedButton.icon(
                       onPressed: onSave,
-                      icon: const Icon(LucideIcons.save, size: 16),
+                      icon: const Icon(LucideIcons.save, size: 15),
                       label: Text(isSaved ? 'Perbarui' : 'Simpan', style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: isSaved ? AppColors.success : AppColors.primary,
                         foregroundColor: isSaved ? Colors.white : AppColors.onPrimary,
                         minimumSize: const Size.fromHeight(44),
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
                       ),
                     ),
                   ),
