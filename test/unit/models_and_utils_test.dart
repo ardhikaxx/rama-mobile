@@ -127,21 +127,34 @@ void main() {
       expect(expanded, contains('antarmuka'));
       expect(expanded, contains('desain UI dashboard'));
       expect(expanded, endsWith('.'));
+
+      final surveyExpanded = SentenceExpander.expandActivities('pengukuran GNSS RTK bidang tanah');
+      expect(surveyExpanded, contains('GNSS'));
+      expect(surveyExpanded, contains('Kantor Pertanahan'));
     });
 
     test('expands short learning keyword into formal sentence', () {
       final expanded = SentenceExpander.expandLearnings('riverpod');
       expect(expanded, contains('pemahaman'));
       expect(expanded, contains('riverpod'));
+
+      final surveyLearning = SentenceExpander.expandLearnings('sistem proyeksi TM-3');
+      expect(surveyLearning, contains('TM-3°'));
+      expect(surveyLearning, contains('ATR/BPN'));
     });
 
     test('expands obstacles and handles quick empty/tidak ada case', () {
       final emptyExpanded = SentenceExpander.expandObstacles('tidak ada');
       expect(emptyExpanded, contains('Tidak ada kendala berarti'));
+      expect(emptyExpanded, contains('Bondowoso'));
 
       final bugExpanded = SentenceExpander.expandObstacles('error build gradle');
       expect(bugExpanded, contains('error build gradle'));
       expect(bugExpanded, contains('mentor'));
+
+      final obstacleSurvey = SentenceExpander.expandObstacles('sinyal satelit vegetasi pohon');
+      expect(obstacleSurvey, contains('GNSS'));
+      expect(obstacleSurvey, contains('offset'));
     });
   });
 }

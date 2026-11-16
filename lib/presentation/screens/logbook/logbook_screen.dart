@@ -216,7 +216,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Ketik beberapa kata atau poin kegiatan hari ini. RAMA akan otomatis merangkainya menjadi kalimat formal berstandar magang.',
+            'Ketik beberapa kata atau poin kegiatan survei & pemetaan hari ini. RAMA akan otomatis merangkainya menjadi kalimat formal berstandar Kantor Pertanahan.',
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
           ),
 
@@ -227,7 +227,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             controller: _activitiesController,
             maxLines: 3,
             decoration: const InputDecoration(
-              hintText: 'Ketik beberapa kata, contoh:\n• analisis kebutuhan sistem\n• membuat tampilan antarmuka\n• meeting koordinasi',
+              hintText: 'Ketik beberapa kata, contoh:\n• pengukuran bidang tanah GNSS RTK di Kec. Maesan\n• verifikasi tanda batas patok dan saksi batas\n• digitasi peta bidang dan input GeoKKP',
             ),
           ),
 
@@ -238,12 +238,12 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _buildChip('Pengembangan Fitur', _activitiesController, isDark),
-              _buildChip('Analisis Data', _activitiesController, isDark),
-              _buildChip('Meeting Tim', _activitiesController, isDark),
-              _buildChip('Testing Aplikasi', _activitiesController, isDark),
-              _buildChip('Perbaikan Bug', _activitiesController, isDark),
-              _buildChip('Penyusunan Dokumentasi', _activitiesController, isDark),
+              _buildChip('Pengukuran Lapangan GNSS RTK', _activitiesController, isDark),
+              _buildChip('Pemasangan Patok Batas Bidang', _activitiesController, isDark),
+              _buildChip('Pengolahan Data Koordinat TM-3°', _activitiesController, isDark),
+              _buildChip('Digitasi Peta Bidang GeoKKP', _activitiesController, isDark),
+              _buildChip('Pembuatan Gambar Ukur (GU)', _activitiesController, isDark),
+              _buildChip('Pengecekan Warkah & Ploting PBT', _activitiesController, isDark),
             ],
           ),
 
@@ -309,7 +309,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Ketik topik, wawasan, atau keterampilan yang Anda peroleh hari ini dalam beberapa kata. Sistem akan memperluasnya menjadi kalimat pembelajaran.',
+            'Ketik wawasan teknis, regulasi kadastral, atau keterampilan survei pemetaan yang Anda peroleh hari ini. Sistem akan memperluasnya menjadi kalimat pembelajaran formal.',
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
           ),
 
@@ -320,7 +320,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             controller: _learningsController,
             maxLines: 3,
             decoration: const InputDecoration(
-              hintText: 'Contoh: state management riverpod, alur kerja git, komunikasi tim, pemecahan masalah',
+              hintText: 'Contoh: sistem proyeksi TM-3 BPN, metode GNSS RTK & Total Station, azas contradictoire delimitatie, alur integrasi GeoKKP',
             ),
           ),
 
@@ -331,11 +331,12 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _buildChip('Teknologi Baru', _learningsController, isDark),
-              _buildChip('Version Control Git', _learningsController, isDark),
-              _buildChip('Kerja Sama Tim', _learningsController, isDark),
-              _buildChip('Manajemen Waktu', _learningsController, isDark),
-              _buildChip('Problem Solving', _learningsController, isDark),
+              _buildChip('Sistem Proyeksi TM-3° BPN', _learningsController, isDark),
+              _buildChip('Metode GNSS RTK & Total Station', _learningsController, isDark),
+              _buildChip('Azas Contradictoire Delimitatie', _learningsController, isDark),
+              _buildChip('Standar Gambar Ukur & GeoKKP', _learningsController, isDark),
+              _buildChip('Regulasi Survei Kadastral ATR/BPN', _learningsController, isDark),
+              _buildChip('Komunikasi Lapangan Bersama Pamong', _learningsController, isDark),
             ],
           ),
 
@@ -420,7 +421,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Ketik kendala jika ada hambatan. Jika kegiatan berjalan lancar, Anda dapat menekan tombol cepat "Tidak Ada Kendala" di bawah.',
+            'Ketik kendala teknis atau lapangan jika ada hambatan. Jika kegiatan berjalan lancar, Anda dapat memilih salah satu template resmi di bawah.',
             style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary, height: 1.35),
           ),
 
@@ -472,7 +473,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'Klik salah satu template kalimat di bawah jika seluruh kegiatan magang berjalan tanpa kendala:',
+                  'Klik salah satu template kalimat di bawah jika seluruh kegiatan survei dan pemetaan berjalan lancar tanpa kendala:',
                   style: TextStyle(fontSize: 12, color: AppColors.textSecondary, height: 1.35),
                 ),
                 const SizedBox(height: 10),
@@ -482,9 +483,9 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
                   final isSelected = _obstaclesController.text.trim() == template;
 
                   final titles = [
-                    'Template 1: Selesai Sesuai Target',
-                    'Template 2: Koordinasi & Mentor Baik',
-                    'Template 3: Sarana & Sistem Optimal',
+                    'Template 1: Target Survei Selesai Presisi',
+                    'Template 2: Sinergi Tim & Aparatur Desa',
+                    'Template 3: Peralatan & Sistem GeoKKP Optimal',
                   ];
 
                   return Padding(
@@ -561,7 +562,7 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             controller: _obstaclesController,
             maxLines: 3,
             decoration: const InputDecoration(
-              hintText: 'Contoh: jaringan lambat, error build gradle, penyesuaian alur kerja (atau kosongkan)',
+              hintText: 'Contoh: sinyal satelit GNSS terhalang vegetasi lebat, pemilik batas tanah belum hadir, cuaca hujan di lokasi survei, sinkronisasi GeoKKP (atau kosongkan)',
             ),
           ),
 
@@ -572,9 +573,11 @@ class _LogbookScreenState extends ConsumerState<LogbookScreen> {
             spacing: 6,
             runSpacing: 6,
             children: [
-              _buildChip('Koneksi Jaringan Lambat', _obstaclesController, isDark),
-              _buildChip('Error Kode Program', _obstaclesController, isDark),
-              _buildChip('Penyesuaian Alur Kerja', _obstaclesController, isDark),
+              _buildChip('Sinyal GNSS Terhalang Pohon', _obstaclesController, isDark),
+              _buildChip('Pemilik Batas Belum Hadir', _obstaclesController, isDark),
+              _buildChip('Tumpang Tindih (Overlap) Peta Lama', _obstaclesController, isDark),
+              _buildChip('Kondisi Cuaca Hujan Lapangan', _obstaclesController, isDark),
+              _buildChip('Topografi Medan Perbukitan', _obstaclesController, isDark),
               _buildChip('Tidak Ada Kendala', _obstaclesController, isDark),
             ],
           ),

@@ -23,8 +23,8 @@ class AppSettings {
     this.vibrationEnabled = true,
     this.snoozeEnabled = true,
     this.themeMode = 'system',
-    this.userName = 'Siswa / Mahasiswa Magang',
-    this.organizationName = '',
+    this.userName = 'Tenaga Teknis Survei & Pemetaan',
+    this.organizationName = 'Kantor Pertanahan Kabupaten Bondowoso',
   });
 
   AppSettings copyWith({
