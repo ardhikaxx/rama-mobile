@@ -41,18 +41,18 @@ class FloatingPillNavBar extends StatelessWidget {
               padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF1E293B).withValues(alpha: 0.82)
-                    : Colors.white.withValues(alpha: 0.86),
+                    ? AppColors.darkSurface.withValues(alpha: 0.92)
+                    : Colors.white.withValues(alpha: 0.92),
                 borderRadius: BorderRadius.circular(30),
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.12)
-                      : Colors.white.withValues(alpha: 0.7),
+                      ? AppColors.darkBorder.withValues(alpha: 0.6)
+                      : AppColors.border,
                   width: 1.2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.35 : 0.08),
+                    color: Colors.black.withValues(alpha: isDark ? 0.40 : 0.08),
                     blurRadius: 18,
                     spreadRadius: 0,
                     offset: const Offset(0, 4),
@@ -89,7 +89,7 @@ class FloatingPillNavBar extends StatelessWidget {
                               item.icon,
                               size: 21,
                               color: isActive
-                                  ? Colors.white
+                                  ? AppColors.onPrimary
                                   : (isDark ? AppColors.darkTextSecondary : AppColors.textSecondary),
                             ),
                             if (isActive) ...[
@@ -97,7 +97,7 @@ class FloatingPillNavBar extends StatelessWidget {
                               Text(
                                 item.label,
                                 style: const TextStyle(
-                                  color: Colors.white,
+                                  color: AppColors.onPrimary,
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
                                 ),
