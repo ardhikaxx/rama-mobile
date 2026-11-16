@@ -30,55 +30,6 @@ class SettingsScreen extends ConsumerWidget {
             return ListView(
               padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
               children: [
-                // User Profile & Internship info
-                AppCard(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryContainer,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: const Icon(LucideIcons.user, color: AppColors.primary, size: 26),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              settings.userName,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              settings.organizationName.isNotEmpty
-                                  ? settings.organizationName
-                                  : 'Tempat Magang Belum Diisi',
-                              style: TextStyle(
-                                fontSize: 12.5,
-                                color: isDark ? AppColors.darkTextSecondary : AppColors.textSecondary,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () => _showEditProfileDialog(context, ref, settings.userName, settings.organizationName),
-                        icon: const Icon(LucideIcons.edit2, size: 18),
-                        tooltip: 'Ubah Data Profil',
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
                 // General Schedule & Workdays
                 const Text(
                   'Jadwal & Hari Kerja',
@@ -323,58 +274,6 @@ class SettingsScreen extends ConsumerWidget {
                 ref.read(settingsProvider.notifier).updateThemeMode(val);
               }
             },
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showEditProfileDialog(
-    BuildContext context,
-    WidgetRef ref,
-    String currentName,
-    String currentOrg,
-  ) {
-    final nameCtrl = TextEditingController(text: currentName);
-    final orgCtrl = TextEditingController(text: currentOrg);
-
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text('Ubah Profil Magang', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: nameCtrl,
-              decoration: const InputDecoration(labelText: 'Nama Lengkap / Panggilan'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: orgCtrl,
-              decoration: const InputDecoration(labelText: 'Instansi / Perusahaan Magang'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Batal'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final newName = nameCtrl.text.trim().isNotEmpty ? nameCtrl.text.trim() : 'Siswa / Mahasiswa Magang';
-              final newOrg = orgCtrl.text.trim();
-              final current = ref.read(settingsProvider).valueOrNull;
-              if (current != null) {
-                ref.read(settingsProvider.notifier).updateSettings(
-                      current.copyWith(userName: newName, organizationName: newOrg),
-                    );
-              }
-              Navigator.of(ctx).pop();
-            },
-            child: const Text('Simpan'),
           ),
         ],
       ),
