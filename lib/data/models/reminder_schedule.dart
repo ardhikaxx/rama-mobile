@@ -112,7 +112,7 @@ class ReminderSchedule {
       ),
       const ReminderSchedule(
         type: AppConstants.reminderLogbook,
-        time: '17:00',
+        time: '16:30',
         isEnabled: true,
         activeDays: [1, 2, 3, 4, 5],
         title: 'Jangan Lupa Isi Logbook',

@@ -39,7 +39,7 @@ class DatabaseHelper {
       CREATE TABLE ${AppConstants.tableSettings} (
         id INTEGER PRIMARY KEY CHECK (id = 1),
         working_start_time TEXT NOT NULL DEFAULT '08:00',
-        working_end_time TEXT NOT NULL DEFAULT '17:00',
+        working_end_time TEXT NOT NULL DEFAULT '16:30',
         active_days TEXT NOT NULL DEFAULT '1,2,3,4,5',
         snooze_interval_minutes INTEGER NOT NULL DEFAULT 15,
         max_snooze_count INTEGER NOT NULL DEFAULT 5,

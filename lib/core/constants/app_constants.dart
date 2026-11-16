@@ -38,6 +38,10 @@ class AppConstants {
   static const String reminderAttendance = 'check_out';
   static const String reminderLogbook = 'logbook';
 
+  // Work Hours
+  static const String defaultWorkingStartTime = '08:00';
+  static const String defaultWorkingEndTime = '16:30';
+
   // Days of Week (ISO: 1 = Senin, 7 = Minggu)
   static const List<int> defaultActiveDays = [1, 2, 3, 4, 5]; // Senin - Jumat
   static const Map<int, String> dayNames = {

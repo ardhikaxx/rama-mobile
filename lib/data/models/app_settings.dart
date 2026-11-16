@@ -15,7 +15,7 @@ class AppSettings {
 
   const AppSettings({
     this.workingStartTime = '08:00',
-    this.workingEndTime = '17:00',
+    this.workingEndTime = '16:30',
     this.activeDays = const [1, 2, 3, 4, 5],
     this.snoozeIntervalMinutes = 15,
     this.maxSnoozeCount = 5,
@@ -81,7 +81,7 @@ class AppSettings {
 
     return AppSettings(
       workingStartTime: map['working_start_time'] as String? ?? '08:00',
-      workingEndTime: map['working_end_time'] as String? ?? '17:00',
+      workingEndTime: map['working_end_time'] as String? ?? '16:30',
       activeDays: parsedDays.isEmpty ? AppConstants.defaultActiveDays : parsedDays,
       snoozeIntervalMinutes: map['snooze_interval_minutes'] as int? ?? 15,
       maxSnoozeCount: map['max_snooze_count'] as int? ?? 5,
