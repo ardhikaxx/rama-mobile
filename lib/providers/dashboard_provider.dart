@@ -180,10 +180,11 @@ final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) as
   String reminderMessage = '';
   String reminderStatusType = 'normal';
 
-  // Parse working end time (jam pulang kerja magang, default 16:30)
-  final endParts = settings.workingEndTime.split(':');
-  final departureHour = int.tryParse(endParts[0]) ?? 16;
-  final departureMinute = int.tryParse(endParts[1]) ?? 30;
+  // Parse working end time (jam pulang kerja magang, default 16:30 atau 16.30)
+  final normalizedEndTime = settings.workingEndTime.replaceAll('.', ':');
+  final endParts = normalizedEndTime.split(':');
+  final departureHour = (endParts.isNotEmpty ? int.tryParse(endParts[0]) : null) ?? 16;
+  final departureMinute = (endParts.length > 1 ? int.tryParse(endParts[1]) : null) ?? 30;
   final departureMinutes = departureHour * 60 + departureMinute;
   final nowMinutes = now.hour * 60 + now.minute;
 

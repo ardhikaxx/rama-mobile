@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../core/utils/app_snackbar.dart';
-import '../../../../providers/attendance_provider.dart';
-import '../../../../providers/dashboard_provider.dart';
-import '../../../../providers/logbook_provider.dart';
+import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/app_snackbar.dart';
+import '../../../providers/attendance_provider.dart';
+import '../../../providers/dashboard_provider.dart';
+import '../../../providers/logbook_provider.dart';
 import '../attendance/widgets/attendance_dialog.dart';
 import '../calendar/calendar_screen.dart';
 import '../settings/reminder_settings_screen.dart';
@@ -42,15 +42,20 @@ class DashboardScreen extends ConsumerWidget {
               enabled: true,
               child: _DashboardSkeletonView(),
             ),
-            error: (err, stack) => Center(
-              child: Padding(
+            error: (err, stack) => SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Container(
+                alignment: Alignment.center,
                 padding: const EdgeInsets.all(24),
+                constraints: BoxConstraints(
+                  minHeight: MediaQuery.of(context).size.height * 0.7,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.error_outline, size: 48, color: Colors.red),
                     const SizedBox(height: 12),
-                    Text('Gagal memuat dashboard: $err'),
+                    Text('Gagal memuat dashboard: $err', textAlign: TextAlign.center),
                     const SizedBox(height: 12),
                     ElevatedButton(
                       onPressed: () => ref.invalidate(dashboardDataProvider),

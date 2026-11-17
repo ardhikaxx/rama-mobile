@@ -290,10 +290,10 @@ class SettingsScreen extends ConsumerWidget {
     String currentStart,
     String currentEnd,
   ) async {
-    final startParts = currentStart.split(':');
+    final startParts = currentStart.replaceAll('.', ':').split(':');
     final startTime = TimeOfDay(
-      hour: int.tryParse(startParts[0]) ?? 8,
-      minute: int.tryParse(startParts[1]) ?? 0,
+      hour: (startParts.isNotEmpty ? int.tryParse(startParts[0]) : null) ?? 8,
+      minute: (startParts.length > 1 ? int.tryParse(startParts[1]) : null) ?? 0,
     );
 
     final pickedStart = await showTimePicker(
@@ -304,10 +304,10 @@ class SettingsScreen extends ConsumerWidget {
     if (pickedStart == null) return;
 
     if (context.mounted) {
-      final endParts = currentEnd.split(':');
+      final endParts = currentEnd.replaceAll('.', ':').split(':');
       final endTime = TimeOfDay(
-        hour: int.tryParse(endParts[0]) ?? 17,
-        minute: int.tryParse(endParts[1]) ?? 0,
+        hour: (endParts.isNotEmpty ? int.tryParse(endParts[0]) : null) ?? 16,
+        minute: (endParts.length > 1 ? int.tryParse(endParts[1]) : null) ?? 30,
       );
 
       final pickedEnd = await showTimePicker(
