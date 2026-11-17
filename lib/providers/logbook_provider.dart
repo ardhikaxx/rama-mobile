@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_constants.dart';
-import '../../core/utils/date_formatter.dart';
-import '../../core/utils/sentence_expander.dart';
-import '../data/models/logbook_entry.dart';
+import 'package:rama_app/core/constants/app_constants.dart';
+import 'package:rama_app/core/utils/date_formatter.dart';
+import 'package:rama_app/core/utils/sentence_expander.dart';
+import 'package:rama_app/data/models/logbook_entry.dart';
 import 'app_providers.dart';
 
 class LogbookState {

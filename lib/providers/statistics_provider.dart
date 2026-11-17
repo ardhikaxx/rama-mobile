@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_constants.dart';
-import '../../core/utils/date_formatter.dart';
+import 'package:rama_app/core/constants/app_constants.dart';
+import 'package:rama_app/core/utils/date_formatter.dart';
 import 'app_providers.dart';
 
 enum StatPeriod { thisWeek, thisMonth, allTime, custom }

@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_constants.dart';
-import '../../core/utils/date_formatter.dart';
-import '../data/models/attendance_record.dart';
+import 'package:rama_app/core/constants/app_constants.dart';
+import 'package:rama_app/core/utils/date_formatter.dart';
+import 'package:rama_app/data/models/attendance_record.dart';
 import 'app_providers.dart';
 
 class AttendanceTodayState {

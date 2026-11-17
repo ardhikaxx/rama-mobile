@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
-import '../../../../core/constants/app_colors.dart';
-import '../../../../data/models/reminder_schedule.dart';
-import '../../../widgets/app_card.dart';
+import 'package:rama_app/core/constants/app_colors.dart';
+import 'package:rama_app/data/models/reminder_schedule.dart';
+import 'package:rama_app/presentation/widgets/app_card.dart';
 
 class NextReminderCard extends StatelessWidget {
   final ReminderSchedule? schedule;
@@ -20,16 +20,22 @@ class NextReminderCard extends StatelessWidget {
     this.countdown,
     required this.onSettingsTap,
     this.isPastDeparture = false,
+    bool? isPastDepartureTime,
     this.reminderTitle,
     this.reminderBadge,
     this.reminderMessage,
     this.statusType,
-  });
+    String? reminderStatusType,
+  }) : isPastDepartureResolved = isPastDeparture || (isPastDepartureTime ?? false),
+       statusTypeResolved = statusType ?? reminderStatusType;
+
+  final bool isPastDepartureResolved;
+  final String? statusTypeResolved;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final type = statusType ?? (schedule == null ? 'all_completed' : 'normal');
+    final type = statusTypeResolved ?? (schedule == null ? 'all_completed' : 'normal');
 
     Color cardBg;
     BorderSide cardBorder;

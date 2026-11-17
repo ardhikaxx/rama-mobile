@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/constants/app_constants.dart';
-import '../../core/utils/date_formatter.dart';
-import '../data/models/attendance_record.dart';
-import '../data/models/logbook_entry.dart';
-import '../data/models/reminder_schedule.dart';
-import 'app_providers.dart';
-import 'attendance_provider.dart';
-import 'logbook_provider.dart';
-import 'reminder_provider.dart';
-import 'settings_provider.dart';
+import 'package:rama_app/core/constants/app_constants.dart';
+import 'package:rama_app/core/utils/date_formatter.dart';
+import 'package:rama_app/data/models/attendance_record.dart';
+import 'package:rama_app/data/models/logbook_entry.dart';
+import 'package:rama_app/data/models/reminder_schedule.dart';
+import 'package:rama_app/providers/app_providers.dart';
+import 'package:rama_app/providers/attendance_provider.dart';
+import 'package:rama_app/providers/logbook_provider.dart';
+import 'package:rama_app/providers/reminder_provider.dart';
+import 'package:rama_app/providers/settings_provider.dart';
 
 class DashboardData {
   final String greeting;
@@ -63,6 +63,8 @@ class DashboardData {
   AttendanceRecord? get checkInRecord => null;
   bool get checkOutScheduled => attendanceScheduled;
   AttendanceRecord? get checkOutRecord => attendanceRecord;
+  bool get isPastDeparture => isPastDepartureTime;
+  String get statusType => reminderStatusType;
 }
 
 final dashboardDataProvider = FutureProvider.autoDispose<DashboardData>((ref) async {
